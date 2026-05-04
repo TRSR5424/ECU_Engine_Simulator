@@ -1,0 +1,216 @@
+🧠 1. Choice of System (ECU-style engine control)
+Decision:
+
+You modelled an internal combustion engine with an electronic control unit regulating air-fuel ratio and engine speed.
+
+Why this matters:
+It is a classic feedback control problem
+It has real industrial relevance (automotive ECU design)
+It naturally includes:
+nonlinear dynamics
+disturbances
+constraints
+Trade-off:
+You simplify real engine physics heavily
+But gain a tractable, analysable control system
+🧩 2. Separation into Engine, Controller, and Scenario
+Decision:
+
+You split the system into:
+
+Engine model (physics)
+Controller (C++)
+Scenario + simulation (Python)
+Configuration (YAML)
+Why:
+
+This mimics real engineering systems:
+
+plant ≠ controller ≠ test conditions
+Benefit:
+modular design
+easy swapping of controllers (PID vs LQR)
+clean experiments
+Trade-off:
+more architecture work
+but significantly better evaluation capability
+⚙️ 3. State-Space Choice (what variables exist)
+Decision:
+
+You defined engine state as:
+
+air mass
+fuel mass
+engine speed
+
+and derived:
+
+air-fuel ratio
+Why:
+minimal set that still produces meaningful dynamics
+supports feedback control naturally
+Trade-off:
+not physically exact
+but structurally realistic
+🔁 4. Feedback Control Design
+Decision:
+
+Controller does NOT compute physics — it only:
+
+compares target vs measured air-fuel ratio
+outputs fuel injection
+Why:
+
+This is the core principle of control systems:
+
+separate “what we want” from “how we achieve it”
+
+Trade-off:
+requires a separate target model
+but improves clarity and realism
+🎯 5. Target Air-Fuel Ratio is Scenario-Based
+Decision:
+
+Target air-fuel ratio is generated from:
+
+throttle position
+optionally engine speed
+Why:
+
+This mimics real ECU “maps”:
+
+power demand → richer mixture
+efficiency → lean mixture
+Trade-off:
+introduces extra model layer
+but makes control problem meaningful (not trivial constant tracking)
+📡 6. Sensor Noise and Imperfection
+Decision:
+
+Measured air-fuel ratio includes noise.
+
+Why:
+
+Real systems never observe true state.
+
+Benefit:
+tests robustness of controller
+prevents “perfect simulation bias”
+Trade-off:
+adds instability complexity
+requires tuning controller carefully
+🧮 7. Continuous-Time Approximation (discrete timestep model)
+Decision:
+
+System evolves in discrete timesteps:
+
+small Δt updates instead of continuous equations
+Why:
+computationally simple
+easy to implement and debug
+standard in simulation systems
+Trade-off:
+approximation of real physics
+accuracy depends on timestep size
+🔥 8. Engine Torque Model is Simplified
+Decision:
+
+Torque depends mainly on:
+
+fuel mass
+combustion efficiency
+load resistance
+Why:
+keeps system nonlinear but manageable
+ensures fuel has direct performance impact
+Trade-off:
+ignores full thermodynamics
+but preserves control-relevant behaviour
+⚖️ 9. Load is Linear in Engine Speed
+Decision:
+
+Load torque increases with engine speed.
+
+Why:
+represents friction + resistance in a simple form
+ensures stable equilibrium exists
+Trade-off:
+real engines are more complex (nonlinear load curves)
+but linear form keeps system analytically stable
+🎛️ 10. PID Controller in C++
+Decision:
+
+Controller implemented using:
+
+proportional term
+integral term
+derivative term
+Why:
+industry-standard baseline controller
+easy to analyse and compare
+Trade-off:
+not optimal control (like MPC/LQR could be)
+but excellent for demonstration and tuning
+🧾 11. YAML-Based Configuration System
+Decision:
+
+All parameters stored externally:
+
+engine constants
+controller gains
+scenarios
+Why:
+decouples code from experiments
+enables repeatability
+supports parameter sweeps
+Trade-off:
+extra parsing layer
+but massively improves experiment design
+🧪 12. Experiment-Driven Design
+Decision:
+
+System is designed around running experiments, not just simulation.
+
+Why:
+
+Your goal is evaluation:
+
+step response
+disturbance rejection
+noise robustness
+Benefit:
+transforms project into “control system study”, not just code
+📊 13. Offline Analysis Model
+Decision:
+
+Simulation logs data → analysis happens after run
+
+Why:
+allows reproducibility
+enables comparison across controllers
+avoids coupling analysis to runtime
+Trade-off:
+not real-time feedback
+but much better scientific workflow
+🧠 14. Key Abstraction Decision (most important)
+Decision:
+
+You explicitly separated:
+
+Plant (engine) → evolves physical state
+Controller (C++) → decides input
+Observer (sensor) → imperfect measurement
+Reference model (target AFR) → desired behaviour
+Why this matters:
+
+This is the core structure of all control systems.
+
+🧭 Final System Philosophy
+
+Your project is built on this principle:
+
+“A nonlinear dynamic system is controlled via feedback using noisy measurements, with configurable parameters enabling systematic experimentation.”
+
+🔥 If you summarise this in one sentence (for report)
+
+The system was designed as a modular feedback control framework separating physical simulation, control logic, sensing, and experimental configuration to enable structured evaluation of controller performance under varying operating conditions.

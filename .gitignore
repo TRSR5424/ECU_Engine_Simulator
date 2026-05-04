@@ -1,0 +1,92 @@
+# Operating system files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Vim / Emacs swap files
+*~
+*.swp
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+pyenv-virtualenv.cfg
+build/
+dist/
+eggs/
+*.egg-info/
+*.egg
+wheelhouse/
+htmlcov/
+.tox/
+.nox/
+.pytest_cache/
+coverage.xml
+.coverage
+cover/
+
+# Jupyter
+.ipynb_checkpoints
+
+# C / C++ build
+*.o
+*.obj
+*.so
+*.a
+*.lib
+*.dll
+*.exe
+*.out
+*.dSYM/
+cmake-build-*/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# IDEs/Editors
+.idea/
+.vscode/
+/.history/
+*.iml
+
+# Logs and runtime files
+*.log
+*.log.*
+*.pid
+*.seed
+*.pid.lock
+
+# Environment variables
+.env
+.env.*.local
+
+# Data files and runs (keep under version control only if needed)
+/data/runs/
+/data/logs/
+
+# Generated config (runtime)
+/config/active/resolved_config.yaml
+
+# macOS
+Icon
+
+# Coverage, profiling
+*.prof
+coverage/
+
+# Misc
+.cache/
+.pytest_cache/
+.mypy_cache/
+__MACOSX/

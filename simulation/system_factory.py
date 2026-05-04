@@ -1,0 +1,1 @@
+"""System factory placeholder"""

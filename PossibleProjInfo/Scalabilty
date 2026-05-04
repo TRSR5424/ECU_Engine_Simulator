@@ -1,0 +1,182 @@
+🧠 Core Design Principle: “Pluggable Systems”
+
+You define interfaces (contracts) for each part of the system:
+
+Engine model
+Controller
+Target/Reference model
+Sensor model
+
+Then each one can have multiple implementations.
+
+🧩 1. Engine Model Interface (Swappable Physics)
+Contract (what every engine must provide)
+
+Every engine model must implement:
+
+update state
+accept inputs (throttle, fuel injection)
+return outputs (air, fuel, rpm, air-fuel ratio)
+Example implementations
+🟢 Simple engine (your current version)
+linear air model
+simple torque equation
+basic RPM update
+🔵 Medium engine
+manifold delay (air lag)
+nonlinear fuel burn
+smoother torque curve
+🔴 Advanced engine (future extension)
+volumetric efficiency model
+turbo lag
+temperature effects
+YAML selection
+engine:
+  type: simple
+
+or
+
+engine:
+  type: medium
+Python structure idea
+class EngineBase:
+    def step(self, throttle, fuel_injection, dt):
+        raise NotImplementedError
+class SimpleEngine(EngineBase):
+    ...
+class MediumEngine(EngineBase):
+    ...
+
+Factory:
+
+def create_engine(config):
+    if config["engine"]["type"] == "simple":
+        return SimpleEngine(config)
+    elif config["engine"]["type"] == "medium":
+        return MediumEngine(config)
+🧠 2. Controller (C++ swap system)
+
+Same idea — but in C++.
+
+Interface:
+class Controller {
+public:
+    virtual double compute(double error, double dt) = 0;
+};
+Implementations:
+🟢 PID Controller
+controller:
+  type: pid
+🔵 LQR Controller (future)
+controller:
+  type: lqr
+🔴 Rule-based ECU logic
+controller:
+  type: lookup_table
+Why this is strong:
+
+You can compare:
+
+PID vs LQR performance
+stability vs responsiveness
+robustness to noise
+🧠 3. Target / Reference Model (VERY important for realism)
+
+Instead of hardcoding target AFR:
+
+Interface:
+inputs: throttle, rpm
+output: target air-fuel ratio
+Implementations:
+🟢 Simple lookup
+fixed AFR based on throttle
+🔵 Engine-map style
+2D table (throttle × rpm)
+🔴 Dynamic model
+efficiency + emissions + power trade-off
+YAML:
+reference_model:
+  type: lookup
+🧠 4. Sensor Model (noise abstraction)
+Interface:
+true state → measured state
+Implementations:
+🟢 No noise
+perfect measurement
+🔵 Gaussian noise
+realistic sensor noise
+🔴 Delayed + noisy sensor
+adds lag + filtering effects
+YAML:
+sensor:
+  type: noisy
+  noise_std: 0.02
+🔁 5. Full System Wiring (important concept)
+
+At runtime:
+
+YAML config
+   ↓
+Factory builds components
+   ↓
+Simulation loop runs:
+   Engine ← Controller ← Sensor ← Reference
+🧩 6. Main Simulation Loop (clean architecture)
+engine = create_engine(config)
+controller = create_controller(config)
+reference = create_reference(config)
+sensor = create_sensor(config)
+
+while running:
+    throttle = get_throttle(t)
+
+    state = engine.get_state()
+
+    target = reference.compute(throttle, state.rpm)
+
+    measured = sensor.read(state)
+
+    error = target - measured
+
+    control = controller.compute(error, dt)
+
+    engine.step(throttle, control, dt)
+🧠 7. Why YAML switching is powerful
+
+You can now run experiments like:
+
+Experiment 1
+engine: simple
+controller: pid
+Experiment 2
+engine: medium
+controller: pid
+Experiment 3
+engine: medium
+controller: lqr
+
+Now you can compare:
+
+stability
+overshoot
+response time
+robustness
+🔥 8. What this achieves academically
+
+This architecture demonstrates:
+
+modular system design
+abstraction boundaries
+experimental reproducibility
+controller comparison framework
+
+This is far more valuable than the simulation itself.
+
+🧭 Final mental model
+
+Think of your system like Lego:
+
+Engine block (swappable)
+Controller block (swappable)
+Sensor block (swappable)
+Reference block (swappable)

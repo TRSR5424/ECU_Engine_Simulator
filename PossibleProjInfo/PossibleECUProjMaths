@@ -1,0 +1,276 @@
+# Configuration File Structure
+
+## simulation
+
+```yaml
+simulation:
+  time_step: 0.01
+  duration: 20.0
+```
+
+* **time_step**: Time increment per simulation step (seconds)
+
+  * Typical range: `0.001 – 0.05`
+* **duration**: Total simulation time (seconds)
+
+  * Typical range: `5 – 60`
+
+---
+
+## engine
+
+```yaml
+engine:
+  air_in_coefficient: 2.0
+  air_out_coefficient: 0.5
+  fuel_burn_coefficient: 0.3
+  torque_coefficient: 1.2
+  load_coefficient: 0.8
+  ideal_air_fuel_ratio: 14.7
+  efficiency_curve_strength: 0.1
+```
+
+### air_in_coefficient
+
+Controls how strongly throttle affects incoming air.
+
+* Typical range: `0.5 – 5.0`
+* Higher value → faster air response to throttle
+
+---
+
+### air_out_coefficient
+
+Controls how quickly air leaves or is consumed.
+
+* Typical range: `0.1 – 2.0`
+* Higher value → air dissipates faster
+
+---
+
+### fuel_burn_coefficient
+
+Controls how quickly fuel is consumed.
+
+* Typical range: `0.1 – 1.0`
+* Higher value → fuel is used faster
+
+---
+
+### torque_coefficient
+
+Scales how much torque is produced from fuel.
+
+* Typical range: `0.5 – 5.0`
+* Higher value → stronger engine response
+
+---
+
+### load_coefficient
+
+Represents resistance opposing engine motion.
+
+* Typical range: `0.1 – 2.0`
+* Higher value → engine slows down more quickly
+
+---
+
+### ideal_air_fuel_ratio
+
+Target ratio for optimal combustion.
+
+* Typical range: `14.5 – 14.7` (petrol engines)
+
+---
+
+### efficiency_curve_strength
+
+Controls how sensitive efficiency is to AFR deviation.
+
+* Typical range: `0.01 – 0.5`
+* Higher value → sharper drop in efficiency away from ideal
+
+---
+
+## controller
+
+```yaml
+controller:
+  type: pid
+  proportional_gain: 0.5
+  integral_gain: 0.1
+  derivative_gain: 0.05
+  min_fuel_injection: 0.0
+  max_fuel_injection: 2.0
+```
+
+### proportional_gain
+
+Controls response to current error.
+
+* Typical range: `0.1 – 5.0`
+* Too high → oscillations
+* Too low → slow response
+
+---
+
+### integral_gain
+
+Controls response to accumulated error.
+
+* Typical range: `0.0 – 1.0`
+* Too high → instability / overshoot
+
+---
+
+### derivative_gain
+
+Controls response to rate of change of error.
+
+* Typical range: `0.0 – 1.0`
+* Helps damp oscillations
+
+---
+
+### min_fuel_injection / max_fuel_injection
+
+Limits actuator output.
+
+* Typical range:
+
+  * min: `0.0`
+  * max: `1.0 – 5.0`
+
+---
+
+## scenario
+
+```yaml
+scenario:
+  throttle_profile:
+    - time: 0
+      value: 0.2
+    - time: 5
+      value: 0.8
+```
+
+* **value**: Throttle position
+
+  * Range: `0.0 – 1.0`
+
+---
+
+# Mathematical Model
+
+## 1. Air Mass Update
+
+New air mass equals:
+
+current air mass
+plus time step multiplied by (air entering minus air leaving)
+
+Air entering = air_in_coefficient × throttle position
+Air leaving = air_out_coefficient × current air mass
+
+---
+
+## 2. Fuel Mass Update
+
+New fuel mass equals:
+
+current fuel mass
+plus time step multiplied by (fuel injection minus fuel consumption)
+
+Fuel consumption = fuel_burn_coefficient × current fuel mass
+
+---
+
+## 3. Air-Fuel Ratio
+
+Air-fuel ratio equals:
+
+air mass divided by fuel mass
+
+---
+
+## 4. Combustion Efficiency
+
+Efficiency decreases as air-fuel ratio moves away from ideal:
+
+efficiency = exponential decay based on difference between current AFR and ideal AFR
+
+---
+
+## 5. Engine Torque
+
+Engine torque equals:
+
+torque_coefficient × fuel mass × combustion efficiency
+
+---
+
+## 6. Load Torque
+
+Load torque equals:
+
+load_coefficient × engine speed
+
+---
+
+## 7. Engine Speed Update
+
+New engine speed equals:
+
+current engine speed
+plus time step multiplied by (engine torque minus load torque)
+
+---
+
+## 8. Sensor Measurement
+
+Measured air-fuel ratio equals:
+
+true air-fuel ratio plus random noise
+
+---
+
+## 9. Target Air-Fuel Ratio
+
+Determined from throttle (and optionally engine speed):
+
+* Low throttle → higher AFR (lean)
+* Medium throttle → stoichiometric AFR
+* High throttle → lower AFR (rich)
+
+---
+
+## 10. Control Error
+
+Error equals:
+
+target air-fuel ratio minus measured air-fuel ratio
+
+---
+
+## 11. PID Controller
+
+Fuel injection equals:
+
+proportional gain × error
+plus integral gain × accumulated error
+plus derivative gain × rate of change of error
+
+---
+
+## 12. Actuator Limits
+
+Fuel injection is clamped between minimum and maximum values.
+
+---
+
+# Notes on Parameters
+
+* Parameters are **tunable**, not fixed physical constants
+* Values should produce realistic qualitative behaviour
+* Small changes can significantly affect stability
+* Parameter sweeps are recommended for analysis

@@ -15,11 +15,12 @@ def test_simple_engine_advances_state():
 
 def test_simulator_runs_fixed_variable_loop():
     simulator = Simulator(
-        settings=SimulationSettings(duration=0.5, dt=0.1, throttle=0.5, fuel_injection=0.1)
+        settings=SimulationSettings(duration=0.5, dt=0.1, throttle=0.5)
     )
 
     result = simulator.run()
 
-    assert len(result.records) == 5
+    assert len(result.records) == 6
+    assert result.records[0].fuel_injection == 0.08
     assert result.records[0].throttle == 0.5
     assert result.records[-1].time == 0.4

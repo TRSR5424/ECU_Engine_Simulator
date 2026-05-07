@@ -1,0 +1,592 @@
+# Engine Control System Simulation — Project Overview
+
+# Purpose
+
+This project simulates a simplified internal combustion engine and an electronic control unit (ECU).
+
+The system is designed to:
+
+* simulate engine behaviour over time
+* demonstrate feedback control concepts
+* allow configurable experiments
+* separate simulation, control, and analysis systems
+
+The architecture is modular so that individual systems can later be replaced with more advanced implementations.
+
+---
+
+# Minimum Viable Project (MVP)
+
+The minimum viable version of the project contains:
+
+* a simple engine simulation
+* a timestep simulation loop
+* a basic target air-fuel ratio system
+* a fixed-output controller
+* YAML configuration loading
+* CSV data logging
+* offline plotting/analysis
+
+The controller does NOT initially need PID control.
+
+The controller only needs to:
+
+* accept current engine state
+* return a fixed fuel injection value
+
+Example:
+
+```cpp id="minctrl1"
+double Controller::compute() {
+    return 1.0;
+}
+```
+
+This allows the entire simulation pipeline to be built and validated before implementing real feedback control.
+
+---
+
+# System Overview
+
+The simulation is divided into several independent systems:
+
+1. Configuration System
+2. Simulation System
+3. Engine Model
+4. Controller
+5. Reference Model
+6. Sensor Model
+7. Logging System
+8. Analysis System
+9. Live UI System
+
+---
+
+# 1. Configuration System
+
+## Purpose
+
+Defines all configurable parameters for the simulation.
+
+The configuration system controls:
+
+* which experiment is active
+* engine parameters
+* controller parameters
+* sensor settings
+* simulation settings
+* throttle scenarios
+
+---
+
+## Main Variables
+
+### Global Variables
+
+* active experiment
+* UI enabled/disabled
+* logging level
+
+### Engine Variables
+
+* air inflow coefficient
+* air outflow coefficient
+* fuel burn coefficient
+* torque coefficient
+* load coefficient
+
+### Simulation Variables
+
+* timestep size
+* simulation duration
+
+### Scenario Variables
+
+* throttle profile over time
+
+---
+
+## Responsibilities
+
+The configuration system:
+
+* loads YAML files
+* merges base + experiment configs
+* fills missing values using defaults
+* provides resolved configuration to simulation
+
+---
+
+# 2. Simulation System
+
+## Purpose
+
+Coordinates the entire simulation.
+
+This is the "main loop" of the project.
+
+---
+
+## Responsibilities
+
+The simulation system:
+
+* advances time
+* updates engine state
+* calls controller
+* calls sensor
+* calls reference model
+* stores outputs
+
+---
+
+## Main Variables
+
+### Time Variables
+
+* current simulation time
+* timestep size
+
+### Runtime Variables
+
+* current throttle position
+* current fuel injection
+
+---
+
+## Main Loop
+
+Each timestep:
+
+1. Read throttle input
+2. Get current engine state
+3. Generate target AFR
+4. Read sensor measurement
+5. Call controller
+6. Update engine
+7. Store outputs
+8. Repeat
+
+---
+
+# 3. Engine Model
+
+## Purpose
+
+Simulates simplified engine physics.
+
+The engine model represents the "plant" being controlled.
+
+---
+
+## Controlled Variables
+
+The engine model updates:
+
+* air mass
+* fuel mass
+* air-fuel ratio
+* engine speed
+* engine torque
+
+---
+
+## Inputs
+
+The engine receives:
+
+* throttle position
+* fuel injection amount
+
+---
+
+## Outputs
+
+The engine outputs:
+
+* current air-fuel ratio
+* current engine speed
+* current torque
+
+---
+
+## Main Equations
+
+### Air Mass
+
+Air mass changes based on:
+
+* incoming air from throttle
+* outgoing/consumed air
+
+---
+
+### Fuel Mass
+
+Fuel mass changes based on:
+
+* injected fuel
+* burned fuel
+
+---
+
+### Air-Fuel Ratio
+
+Calculated from:
+
+```plaintext id="afr1"
+air mass / fuel mass
+```
+
+---
+
+### Engine Torque
+
+Torque depends on:
+
+* fuel amount
+* combustion efficiency
+
+---
+
+### Engine Speed
+
+Engine speed changes based on:
+
+* engine torque
+* load torque
+
+---
+
+## Main Variables
+
+### State Variables
+
+* air_mass
+* fuel_mass
+* engine_speed
+
+### Derived Variables
+
+* air_fuel_ratio
+* engine_torque
+
+---
+
+# 4. Controller
+
+## Purpose
+
+Determines fuel injection amount.
+
+The controller represents the ECU.
+
+---
+
+## Minimum Viable Controller
+
+The MVP controller simply returns a fixed fuel injection value.
+
+Example:
+
+```cpp id="ctrlfixed1"
+return 1.0;
+```
+
+This proves:
+
+* simulation integration
+* controller communication
+* engine response
+
+---
+
+## Future Controller Responsibilities
+
+Later versions may:
+
+* compare target vs measured AFR
+* compute error
+* apply PID control
+* stabilize AFR
+
+---
+
+## Inputs
+
+The controller may receive:
+
+* measured AFR
+* target AFR
+* engine speed
+
+---
+
+## Outputs
+
+The controller outputs:
+
+* fuel injection amount
+
+---
+
+## Main Variables (future PID)
+
+* proportional gain
+* integral gain
+* derivative gain
+* accumulated error
+* previous error
+
+---
+
+# 5. Reference Model
+
+## Purpose
+
+Generates target air-fuel ratio.
+
+The reference model defines:
+
+* desired engine behaviour
+
+---
+
+## Inputs
+
+* throttle position
+* optional engine speed
+
+---
+
+## Outputs
+
+* target air-fuel ratio
+
+---
+
+## Example Logic
+
+### Low throttle
+
+* lean AFR
+* fuel efficient
+
+### High throttle
+
+* rich AFR
+* more power
+
+---
+
+# 6. Sensor Model
+
+## Purpose
+
+Simulates imperfect measurements.
+
+Real ECUs never receive perfect information.
+
+---
+
+## Responsibilities
+
+The sensor system may add:
+
+* random noise
+* delay
+* filtering
+
+---
+
+## Inputs
+
+* true engine state
+
+---
+
+## Outputs
+
+* measured AFR
+
+---
+
+## Main Variables
+
+* noise strength
+* sensor delay
+
+---
+
+# 7. Logging System
+
+## Purpose
+
+Stores simulation outputs for later analysis.
+
+---
+
+## Responsibilities
+
+Logs:
+
+* time
+* AFR
+* RPM
+* throttle
+* fuel injection
+
+---
+
+## Output Formats
+
+* CSV
+* JSON logs
+
+---
+
+# 8. Analysis System
+
+## Purpose
+
+Evaluates controller and engine behaviour.
+
+---
+
+## Responsibilities
+
+Creates:
+
+* AFR graphs
+* RPM graphs
+* controller comparisons
+* stability metrics
+
+---
+
+## Example Metrics
+
+* settling time
+* overshoot
+* steady-state error
+
+---
+
+# 9. Live UI System
+
+## Purpose
+
+Provides a real-time interactive demo.
+
+---
+
+## Features
+
+The UI may allow:
+
+* live throttle adjustment
+* live PID tuning
+* real-time graph updates
+
+---
+
+## Example Graphs
+
+* AFR vs time
+* RPM vs time
+* fuel injection vs time
+
+---
+
+# Data Flow Overview
+
+```plaintext id="flowall1"
+YAML Config
+    ↓
+Simulation System
+    ↓
+Reference Model → target AFR
+    ↓
+Sensor Model → measured AFR
+    ↓
+Controller → fuel injection
+    ↓
+Engine Model → updated state
+    ↓
+Logging + Analysis
+```
+
+---
+
+# Minimum Viable Build Order
+
+## Step 1
+
+* Engine simulation
+* Fixed throttle
+* Fixed fueling
+
+## Step 2
+
+* Logging system
+* CSV output
+
+## Step 3
+
+* YAML config loading
+
+## Step 4
+
+* Experiment config inheritance
+
+## Step 5
+
+* Sensor system
+
+## Step 6
+
+* PID controller
+
+## Step 7
+
+* Live UI
+
+---
+
+# Key Design Decisions
+
+## Modular Architecture
+
+Each system is independent and swappable.
+
+---
+
+## Hierarchical Configuration
+
+Experiment configs inherit from base configs.
+
+---
+
+## Separated Controller
+
+Controller exists independently from engine simulation.
+
+---
+
+## Experiment-Driven Design
+
+The project is designed for testing and comparison, not only simulation.
+
+---
+
+# Long-Term Extensions
+
+Possible future additions:
+
+* LQR controller
+* turbocharger model
+* thermal simulation
+* engine maps
+* automatic controller tuning
+* machine learning controller
+* real-time networking

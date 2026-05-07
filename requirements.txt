@@ -1,3 +1,4 @@
-# Add Python dependencies here (example)
+# Runtime and development dependencies for the simulator MVP.
 numpy
 matplotlib
+pytest

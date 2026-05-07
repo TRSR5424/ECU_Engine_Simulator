@@ -66,6 +66,7 @@ yarn.lock
 *.pid
 *.seed
 *.pid.lock
+/data
 
 # Environment variables
 .env

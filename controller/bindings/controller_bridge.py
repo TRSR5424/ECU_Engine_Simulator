@@ -3,8 +3,27 @@
 from __future__ import annotations
 
 import ctypes
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
+
+
+@dataclass(frozen=True)
+class ControllerInput:
+    """Structured input to a controller with all available state information.
+    
+    Controllers can use any subset of these fields. Future controllers may
+    declare which fields they need, but all are available here.
+    """
+
+    time_seconds: float
+    throttle_position: float
+    target_air_fuel_ratio: float
+    measured_air_fuel_ratio: float
+    engine_speed_rpm: float
+    torque: float
+    air_mass: float
+    fuel_mass: float
 
 
 class ControllerBridge:
@@ -12,9 +31,21 @@ class ControllerBridge:
 
     FIXED_FUEL_INJECTION = 0.08
 
-    def __init__(self):
+    def __init__(self, config: dict | None = None):
         self._lib: Optional[ctypes.CDLL] = None
         self._handle: Optional[ctypes.c_void_p] = None
+        self._controller_type: str = "fixed"
+
+        # Allow overriding the fallback fixed fuel injection value via config
+        if config:
+            self._controller_type = config.get("type", "fixed").lower()
+            if "fixed_fuel_injection" in config:
+                try:
+                    self.FIXED_FUEL_INJECTION = float(config["fixed_fuel_injection"])
+                except Exception:
+                    # keep default if parsing fails
+                    pass
+
         self._load_library()
         self._create_controller()
 
@@ -43,38 +74,45 @@ class ControllerBridge:
         self._lib = None
 
     def _create_controller(self) -> None:
-        """Create a fixed controller instance in C++."""
+        """Create a controller instance in C++ based on controller type."""
         # If C++ library wasn't loaded, skip creating the native controller and
         # rely on the Python fallback behavior in `compute()`.
         if not self._lib:
             self._handle = None
             return
 
-        # Define function signature for C++ create_fixed_controller
-        self._lib.create_fixed_controller.argtypes = []
-        self._lib.create_fixed_controller.restype = ctypes.c_void_p
+        # Map controller type to the corresponding C function name
+        create_func_name = f"create_{self._controller_type}_controller"
 
-        self._handle = self._lib.create_fixed_controller()
+        # Check if the function exists in the library
+        if not hasattr(self._lib, create_func_name):
+            # Fall back to Python if the specific controller type isn't available
+            self._handle = None
+            return
+
+        # Define function signature for the C++ create function
+        create_func = getattr(self._lib, create_func_name)
+        create_func.argtypes = []
+        create_func.restype = ctypes.c_void_p
+
+        self._handle = create_func()
 
         if not self._handle:
             # Failed to create native controller: fall back to Python.
             self._handle = None
 
-    def compute(
-        self,
-        *,
-        time_seconds: float,
-        throttle_position: float,
-        target_air_fuel_ratio: float,
-        measured_air_fuel_ratio: float,
-        engine_speed_rpm: float,
-        torque: float,
-        air_mass: float,
-        fuel_mass: float,
-    ) -> float:
-        """Call the C++ controller to compute fuel injection."""
+    def compute(self, input: ControllerInput) -> float:
+        """Call the controller to compute fuel injection.
+        
+        Args:
+            input: ControllerInput dataclass with all available state information.
+                   Controllers use whatever fields they need.
+        
+        Returns:
+            Fuel injection value.
+        """
         # If the C++ library/controller isn't available, return the fixed
-        # fixed controller value. This keeps the simulator runnable in
+        # controller value. This keeps the simulator runnable in
         # environments where the native build hasn't been performed.
         if not self._lib or not self._handle:
             return float(self.FIXED_FUEL_INJECTION)
@@ -96,14 +134,14 @@ class ControllerBridge:
         return float(
             self._lib.controller_compute(
                 self._handle,
-                ctypes.c_double(time_seconds),
-                ctypes.c_double(throttle_position),
-                ctypes.c_double(target_air_fuel_ratio),
-                ctypes.c_double(measured_air_fuel_ratio),
-                ctypes.c_double(engine_speed_rpm),
-                ctypes.c_double(torque),
-                ctypes.c_double(air_mass),
-                ctypes.c_double(fuel_mass),
+                ctypes.c_double(input.time_seconds),
+                ctypes.c_double(input.throttle_position),
+                ctypes.c_double(input.target_air_fuel_ratio),
+                ctypes.c_double(input.measured_air_fuel_ratio),
+                ctypes.c_double(input.engine_speed_rpm),
+                ctypes.c_double(input.torque),
+                ctypes.c_double(input.air_mass),
+                ctypes.c_double(input.fuel_mass),
             )
         )
 

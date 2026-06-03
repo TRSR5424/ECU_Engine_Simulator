@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from controller.bindings.controller_bridge import ControllerBridge
+from controller.bindings.controller_bridge import ControllerBridge, ControllerInput
 from engine.simple_engine import SimpleEngine
 from simulation.logger import SimulationRecord
 from simulation.timestep_loop import iter_timesteps
@@ -40,14 +40,16 @@ class Simulator:
                 time=0.0,
                 throttle=self.settings.throttle,
                 fuel_injection=self.controller.compute(
-                    time_seconds=0.0,
-                    throttle_position=self.settings.throttle,
-                    target_air_fuel_ratio=self.settings.target_air_fuel_ratio,
-                    measured_air_fuel_ratio=initial_state.air_fuel_ratio,
-                    engine_speed_rpm=initial_state.engine_speed_rpm,
-                    torque=initial_state.torque,
-                    air_mass=initial_state.air_mass,
-                    fuel_mass=initial_state.fuel_mass,
+                    ControllerInput(
+                        time_seconds=0.0,
+                        throttle_position=self.settings.throttle,
+                        target_air_fuel_ratio=self.settings.target_air_fuel_ratio,
+                        measured_air_fuel_ratio=initial_state.air_fuel_ratio,
+                        engine_speed_rpm=initial_state.engine_speed_rpm,
+                        torque=initial_state.torque,
+                        air_mass=initial_state.air_mass,
+                        fuel_mass=initial_state.fuel_mass,
+                    )
                 ),
                 air_mass=initial_state.air_mass,
                 fuel_mass=initial_state.fuel_mass,
@@ -59,14 +61,16 @@ class Simulator:
 
         for timestep in iter_timesteps(self.settings.duration, self.settings.dt):
             fuel_injection = self.controller.compute(
-                time_seconds=timestep.time,
-                throttle_position=self.settings.throttle,
-                target_air_fuel_ratio=self.settings.target_air_fuel_ratio,
-                measured_air_fuel_ratio=state.air_fuel_ratio,
-                engine_speed_rpm=state.engine_speed_rpm,
-                torque=state.torque,
-                air_mass=state.air_mass,
-                fuel_mass=state.fuel_mass,
+                ControllerInput(
+                    time_seconds=timestep.time,
+                    throttle_position=self.settings.throttle,
+                    target_air_fuel_ratio=self.settings.target_air_fuel_ratio,
+                    measured_air_fuel_ratio=state.air_fuel_ratio,
+                    engine_speed_rpm=state.engine_speed_rpm,
+                    torque=state.torque,
+                    air_mass=state.air_mass,
+                    fuel_mass=state.fuel_mass,
+                )
             )
             
             state = self.engine.step(

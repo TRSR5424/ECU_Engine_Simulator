@@ -1,1 +1,2 @@
-# Scenario config
+throttle: 0.6
+target_air_fuel_ratio: 14.7

@@ -1,2 +1,9 @@
-# Global configuration placeholder
 project: engine-control-sim
+config_folder: base
+
+simulation:
+  duration_seconds: 30.0
+  timestep_seconds: 0.1
+
+logging:
+  output_csv: data/simulation_output.csv

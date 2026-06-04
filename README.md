@@ -78,3 +78,7 @@ python analysis/run_analysis.py data/default --other data/first_experiment
 ```
 
 This creates plots such as `afr.png`, `rpm.png`, `throttle.png`, and additional diagnostics in the experiment folder. When you compare two folders, matching `_Comparison` folders are created in both locations with comparison plots for AFR, RPM, and throttle.
+
+c++ build
+cmake -B build -DCMAKE_BUILD_TYPE=Release   
+cmake --build build --config Release                   

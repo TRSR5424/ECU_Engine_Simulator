@@ -16,12 +16,5 @@ class SensorBase(ABC):
 
 @dataclass
 class Sensor(SensorBase):
-    """Identity sensor used by the default simulation configuration."""
-
-    # Calibration multiplier applied to the measured value.
-    scale: float = 1.0
-    # Constant calibration offset added after scaling.
-    offset: float = 0.0
-
     def read(self, actual_state: float) -> float:
-        return actual_state * self.scale + self.offset
+        return actual_state

@@ -35,6 +35,7 @@ class ControllerBridge:
         self._lib: Optional[ctypes.CDLL] = None
         self._handle: Optional[ctypes.c_void_p] = None
         self._controller_type: str = "fixed"
+        self._config: dict = config or {}
 
         # Allow overriding the fallback fixed fuel injection value via config
         if config:
@@ -52,12 +53,18 @@ class ControllerBridge:
     def _load_library(self) -> None:
         """Locate and load the compiled C++ shared library."""
         lib_dir = Path(__file__).parent
+        project_root = lib_dir.parent.parent
         
         # Try common library names for different platforms
         lib_names = [
             lib_dir / "libcontroller_cpp.so",      # Linux
             lib_dir / "libcontroller_cpp.dylib",   # macOS
             lib_dir / "controller_cpp.dll",        # Windows
+            lib_dir / "Release" / "controller_cpp.dll",
+            lib_dir / "Debug" / "controller_cpp.dll",
+            project_root / "build" / "Release" / "controller_cpp.dll",
+            project_root / "build" / "Debug" / "controller_cpp.dll",
+            project_root / "build" / "controller_cpp.dll",
         ]
         
         for lib_path in lib_names:
@@ -92,10 +99,35 @@ class ControllerBridge:
 
         # Define function signature for the C++ create function
         create_func = getattr(self._lib, create_func_name)
-        create_func.argtypes = []
         create_func.restype = ctypes.c_void_p
 
-        self._handle = create_func()
+        # Call appropriate creator based on controller type
+        if self._controller_type == "pid":
+            # PID controller requires tuning parameters
+            kp = float(self._config.get("kp", 0.1)) if hasattr(self, "_config") else 0.1
+            ki = float(self._config.get("ki", 0.01)) if hasattr(self, "_config") else 0.01
+            kd = float(self._config.get("kd", 0.01)) if hasattr(self, "_config") else 0.01
+            min_out = float(self._config.get("min_out", 0.0)) if hasattr(self, "_config") else 0.0
+            max_out = float(self._config.get("max_out", 0.5)) if hasattr(self, "_config") else 0.5
+            
+            create_func.argtypes = [
+                ctypes.c_double,  # kp
+                ctypes.c_double,  # ki
+                ctypes.c_double,  # kd
+                ctypes.c_double,  # min_out
+                ctypes.c_double,  # max_out
+            ]
+            self._handle = create_func(
+                ctypes.c_double(kp),
+                ctypes.c_double(ki),
+                ctypes.c_double(kd),
+                ctypes.c_double(min_out),
+                ctypes.c_double(max_out),
+            )
+        else:
+            # Fixed controller and others take no parameters
+            create_func.argtypes = []
+            self._handle = create_func()
 
         if not self._handle:
             # Failed to create native controller: fall back to Python.

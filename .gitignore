@@ -45,6 +45,7 @@ cover/
 *.out
 *.dSYM/
 cmake-build-*/
+*.exp
 
 # Node
 node_modules/

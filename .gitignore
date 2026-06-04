@@ -92,5 +92,10 @@ coverage/
 .mypy_cache/
 __MACOSX/
 
-/config/
+/config/active/
+# ignore user global file
+/config/global.yaml
+# ignore all experiment subfolders inside config, but allow `base/` and the example
+/config/*/
 !/config/base/
+!/config/global.yaml.example

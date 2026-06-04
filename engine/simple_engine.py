@@ -33,9 +33,12 @@ class SimpleEngine(EngineBase):
 
 		torque_from_fuel = self.torque_coeff * fuel_injection
 		load_torque = self.load_coeff * self.state.engine_speed_rpm
-		self.state.torque = max(0.0, torque_from_fuel - load_torque)
-
-		rpm_delta = self.speed_response_coeff * (self.state.torque - load_torque)
+		# allow negative net torque (engine absorbing torque / braking)
+		net_torque = torque_from_fuel - load_torque
+		self.state.torque = net_torque
+  
+		# RPM responds to the net torque (positive accelerates, negative decelerates)
+		rpm_delta = self.speed_response_coeff * net_torque
 		self.state.engine_speed_rpm = max(0.0, self.state.engine_speed_rpm + dt * rpm_delta)
 
 		return self.state

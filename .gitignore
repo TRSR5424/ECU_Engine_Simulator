@@ -91,3 +91,6 @@ coverage/
 .pytest_cache/
 .mypy_cache/
 __MACOSX/
+
+/config/
+!/config/base/

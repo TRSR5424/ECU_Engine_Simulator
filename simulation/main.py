@@ -10,8 +10,8 @@ if __package__ in (None, ""):
     sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from controller.bindings.controller_bridge import ControllerBridge
-from engine.simple_engine import SimpleEngine
-from sensor.sensor_base import Sensor
+from engine.engine_factory import create_engine
+from sensor.sensor_factory import create_sensor
 from simulation.config_resolver import load_runtime_config, write_resolved_config
 from simulation.logger import CsvLogger
 from simulation.simulator import Simulator
@@ -29,8 +29,8 @@ def main() -> None:
         target_air_fuel_ratio=float(runtime_config.reference.get("target_air_fuel_ratio", 14.7)),
     )
 
-    engine = SimpleEngine(**{key: value for key, value in runtime_config.engine.items() if key != "name"})
-    sensor = Sensor()
+    engine = create_engine(runtime_config.engine)
+    sensor = create_sensor(runtime_config.sensor)
     controller = ControllerBridge(config=runtime_config.controller)
     simulator = Simulator(settings=simulation_settings, engine=engine, controller=controller, sensor=sensor)
     result = simulator.run()

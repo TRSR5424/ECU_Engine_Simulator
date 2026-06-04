@@ -25,6 +25,8 @@ class EngineState:
 class EngineBase(ABC):
     """Interface for future engine implementations."""
 
+    state: EngineState
+
     @abstractmethod
     def step(self, throttle: float, fuel_injection: float, dt: float) -> EngineState:
         """Advance the engine state by one timestep."""

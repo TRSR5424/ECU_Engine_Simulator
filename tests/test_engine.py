@@ -1,9 +1,9 @@
-from engine.simple_engine import SimpleEngine
+from engine.engine_factory import create_engine
 from simulation.simulator import Simulator, SimulationSettings
 
 
 def test_simple_engine_advances_state():
-    engine = SimpleEngine()
+    engine = create_engine()
 
     initial_speed = engine.state.engine_speed_rpm
     state = engine.step(throttle=0.5, fuel_injection=0.1, dt=0.1)

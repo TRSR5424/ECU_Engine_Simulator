@@ -5,8 +5,10 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from controller.bindings.controller_bridge import ControllerBridge, ControllerInput
-from engine.simple_engine import SimpleEngine
-from sensor.sensor_base import Sensor
+from engine.engine_base import EngineBase
+from engine.engine_factory import create_engine
+from sensor.sensor_base import SensorBase
+from sensor.sensor_factory import create_sensor
 from simulation.logger import SimulationRecord
 from simulation.timestep_loop import iter_timesteps
 
@@ -27,9 +29,9 @@ class SimulationResult:
 @dataclass
 class Simulator:
     settings: SimulationSettings = field(default_factory=SimulationSettings)
-    engine: SimpleEngine = field(default_factory=SimpleEngine)
+    engine: EngineBase = field(default_factory=create_engine)
     controller: ControllerBridge = field(default_factory=ControllerBridge)
-    sensor: Sensor = field(default_factory=Sensor)
+    sensor: SensorBase = field(default_factory=create_sensor)
 
     def run(self) -> SimulationResult:
         result = SimulationResult()

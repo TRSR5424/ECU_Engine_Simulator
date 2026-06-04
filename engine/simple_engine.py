@@ -15,12 +15,12 @@ class SimpleEngine(EngineBase):
 	configuration without changing the simulation code path.
 	"""
 
-	air_inflow_coeff: float = 1.5
-	air_outflow_coeff: float = 0.25
-	fuel_burn_coeff: float = 0.4
-	torque_coeff: float = 180.0
-	load_coeff: float = 0.02
-	speed_response_coeff: float = 0.04
+	air_inflow_coeff: float
+	air_outflow_coeff: float
+	fuel_burn_coeff: float
+	torque_coeff: float
+	load_coeff: float
+	speed_response_coeff: float
 	state: EngineState = field(default_factory=EngineState)
 
 	def step(self, throttle: float, fuel_injection: float, dt: float) -> EngineState:

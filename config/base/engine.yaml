@@ -1,7 +1,13 @@
 name: simple_engine
+# Air entering the engine chamber per throttle step.
 air_inflow_coeff: 1.5
+# Air leaving the chamber from the current air mass.
 air_outflow_coeff: 0.25
+# Fuel consumption rate from the current fuel mass.
 fuel_burn_coeff: 0.4
+# Torque generated per unit of injected fuel.
 torque_coeff: 180.0
+# Load torque proportional to current engine speed.
 load_coeff: 0.02
+# How quickly torque changes affect engine speed.
 speed_response_coeff: 0.04

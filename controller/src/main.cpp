@@ -15,6 +15,12 @@ extern "C" {
         return handle;
     }
 
+    ControllerHandle* create_pid_controller(double kp, double ki, double kd, double min_out, double max_out) {
+        auto* handle = new ControllerHandle();
+        handle->controller_ptr = ControllerFactory::createPIDController(kp, ki, kd, min_out, max_out);
+        return handle;
+    }
+
     double controller_compute(
         ControllerHandle* handle,
         double time_seconds,

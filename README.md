@@ -24,3 +24,38 @@ engine-control-sim/
 └── build/
 
 See the `FileStructure` file for a more detailed tree.
+
+Quick Start
+-----------
+
+Prerequisites:
+
+- Python 3.11+ (recommended)
+- `pip` available
+
+Install dependencies:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+Run the test suite:
+
+```bash
+python -m pytest -q
+```
+
+Run a single simulation:
+
+```bash
+python simulation/main.py
+```
+
+Configuration and experiments
+-----------------------------
+
+The active configuration folder is set in [config/global.yaml](config/global.yaml#L1-L20) via the `config_folder` key. To run an experiment:
+
+1. Create a new folder under `config/`, e.g. `config/my_experiment`, containing any of the YAML files you wish to override (`engine.yaml`, `controller.yaml`, `scenario.yaml`, `reference.yaml`, `sensor.yaml`).
+2. Update `config/global.yaml` and set `config_folder: my_experiment`.
+3. Run the simulator as above — the resolver will load YAMLs from the selected folder and write a resolved copy to `config/active/resolved_config.yaml` when invoked.

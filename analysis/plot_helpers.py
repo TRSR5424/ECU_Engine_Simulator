@@ -3,6 +3,7 @@ from typing import Tuple
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def ensure_dir(path: str):
@@ -70,4 +71,153 @@ def plot_comparison(df_a: pd.DataFrame, df_b: pd.DataFrame, column: str, out_pat
     ax.set_ylabel(column)
     ax.set_title(f'Comparison: {column}')
     ax.legend()
+    _save_fig(fig, out_path)
+
+
+def plot_torque_vs_rpm(df: pd.DataFrame, out_path: str):
+    fig, ax = plt.subplots()
+    ax.scatter(df['engine_speed_rpm'], df['torque'], s=4)
+    ax.set_xlabel('RPM')
+    ax.set_ylabel('Torque')
+    ax.set_title('Torque vs RPM')
+    _save_fig(fig, out_path)
+
+
+def plot_torque_vs_time(df: pd.DataFrame, out_path: str):
+    fig, ax = plt.subplots()
+    ax.plot(df['time'], df['torque'])
+    ax.set_xlabel('time')
+    ax.set_ylabel('torque')
+    ax.set_title('Torque vs Time')
+    _save_fig(fig, out_path)
+
+
+def plot_fuel_rate(df: pd.DataFrame, out_path: str):
+    fig, ax = plt.subplots()
+    if 'fuel_injection' in df.columns:
+        ax.plot(df['time'], df['fuel_injection'])
+        ax.set_ylabel('fuel_injection')
+    else:
+        ax.plot(df['time'], df.get('fuel_mass', pd.Series([0]*len(df))))
+        ax.set_ylabel('fuel_mass')
+    ax.set_xlabel('time')
+    ax.set_title('Fuel Injection / Fuel Rate')
+    _save_fig(fig, out_path)
+
+
+def plot_air_fuel_masses(df: pd.DataFrame, out_path: str):
+    fig, ax1 = plt.subplots()
+    ax1.plot(df['time'], df.get('air_mass', pd.Series([0]*len(df))), color='tab:blue', label='air_mass')
+    ax1.set_xlabel('time')
+    ax1.set_ylabel('air_mass', color='tab:blue')
+    ax2 = ax1.twinx()
+    ax2.plot(df['time'], df.get('fuel_mass', pd.Series([0]*len(df))), color='tab:red', label='fuel_mass')
+    ax2.set_ylabel('fuel_mass', color='tab:red')
+    fig.suptitle('Air mass and Fuel mass')
+    _save_fig(fig, out_path)
+
+
+def plot_cumulative_fuel(df: pd.DataFrame, out_path: str):
+    fuel = df.get('fuel_mass') if 'fuel_mass' in df.columns else df.get('fuel_injection', pd.Series([0]*len(df)))
+    cum = fuel.cumsum()
+    fig, ax = plt.subplots()
+    ax.plot(df['time'], cum)
+    ax.set_xlabel('time')
+    ax.set_ylabel('cumulative_fuel')
+    ax.set_title('Cumulative Fuel Consumed')
+    _save_fig(fig, out_path)
+
+
+def plot_afr_hist(df: pd.DataFrame, out_path: str):
+    ycol = 'measured_air_fuel_ratio' if 'measured_air_fuel_ratio' in df.columns else 'air_fuel_ratio'
+    fig, ax = plt.subplots()
+    ax.hist(df[ycol].dropna(), bins=50)
+    ax.set_xlabel('AFR')
+    ax.set_title('AFR Distribution')
+    _save_fig(fig, out_path)
+
+
+def plot_afr_vs_rpm(df: pd.DataFrame, out_path: str):
+    fig, ax = plt.subplots()
+    c = df.get('throttle', df.get('throttle_input', None))
+    sc = ax.scatter(df['engine_speed_rpm'], df.get('measured_air_fuel_ratio', df.get('air_fuel_ratio', np.nan)), c=c, s=6, cmap='viridis')
+    ax.set_xlabel('RPM')
+    ax.set_ylabel('AFR')
+    ax.set_title('AFR vs RPM (color=throttle)')
+    if c is not None:
+        fig.colorbar(sc, ax=ax, label='throttle')
+    _save_fig(fig, out_path)
+
+
+def plot_throttle_vs_rpm(df: pd.DataFrame, out_path: str):
+    fig, ax = plt.subplots()
+    ax.scatter(df['engine_speed_rpm'], df.get('throttle', df.get('throttle_input', np.nan)), s=6)
+    ax.set_xlabel('RPM')
+    ax.set_ylabel('throttle')
+    ax.set_title('Throttle vs RPM')
+    _save_fig(fig, out_path)
+
+
+def plot_rolling_stats(df: pd.DataFrame, out_path: str, column: str = None, window: int = 50):
+    if column is None:
+        column = 'measured_air_fuel_ratio' if 'measured_air_fuel_ratio' in df.columns else 'air_fuel_ratio'
+    ser = df[column].rolling(window=window)
+    mean = ser.mean()
+    std = ser.std()
+    fig, ax = plt.subplots()
+    ax.plot(df['time'], mean, label='rolling_mean')
+    ax.plot(df['time'], std, label='rolling_std')
+    ax.set_xlabel('time')
+    ax.set_ylabel(column)
+    ax.set_title(f'Rolling mean/std ({column})')
+    ax.legend()
+    _save_fig(fig, out_path)
+
+
+def plot_psd(df: pd.DataFrame, out_path: str, column: str = 'engine_speed_rpm'):
+    x = df[column].dropna().values
+    if len(x) < 2:
+        return
+    n = len(x)
+    xf = np.fft.rfftfreq(n, d=(df['time'].iloc[1] - df['time'].iloc[0]))
+    yf = np.abs(np.fft.rfft(x - x.mean()))
+    fig, ax = plt.subplots()
+    ax.plot(xf, yf)
+    ax.set_xlabel('frequency')
+    ax.set_ylabel('magnitude')
+    ax.set_title(f'PSD of {column}')
+    _save_fig(fig, out_path)
+
+
+def plot_correlation_heatmap(df: pd.DataFrame, out_path: str, columns: list = None):
+    if columns is None:
+        columns = ['measured_air_fuel_ratio' if 'measured_air_fuel_ratio' in df.columns else 'air_fuel_ratio', 'engine_speed_rpm', 'throttle']
+    cols = [c for c in columns if c in df.columns]
+    if len(cols) < 2:
+        return
+    corr = df[cols].corr()
+    fig, ax = plt.subplots()
+    im = ax.imshow(corr, vmin=-1, vmax=1, cmap='RdBu')
+    ax.set_xticks(range(len(cols)))
+    ax.set_yticks(range(len(cols)))
+    ax.set_xticklabels(cols, rotation=45, ha='right')
+    ax.set_yticklabels(cols)
+    fig.colorbar(im, ax=ax)
+    ax.set_title('Correlation heatmap')
+    _save_fig(fig, out_path)
+
+
+def plot_boxplots_for_comparison(dfs: dict, out_path: str, column: str, labels: list = None):
+    # dfs: {label: df}
+    data = []
+    labs = []
+    for k, df in dfs.items():
+        if column in df.columns:
+            data.append(df[column].dropna())
+            labs.append(k)
+    if not data:
+        return
+    fig, ax = plt.subplots()
+    ax.boxplot(data, labels=labs)
+    ax.set_title(f'Boxplot: {column}')
     _save_fig(fig, out_path)

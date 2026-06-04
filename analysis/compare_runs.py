@@ -12,6 +12,7 @@ from analysis.plot_helpers import (
 	plot_comparison,
 	ensure_dir,
 )
+from analysis.plot_helpers import plot_boxplots_for_comparison, plot_afr_vs_rpm
 
 
 def compare(a_folder: str, b_folder: str):
@@ -31,6 +32,16 @@ def compare(a_folder: str, b_folder: str):
 	plot_comparison(df_a, df_b, afr_col, os.path.join(out_a, 'afr_comparison.png'), labels=(name_a, name_b))
 	plot_comparison(df_a, df_b, 'engine_speed_rpm', os.path.join(out_a, 'rpm_comparison.png'), labels=(name_a, name_b))
 	plot_comparison(df_a, df_b, 'throttle', os.path.join(out_a, 'throttle_comparison.png'), labels=(name_a, name_b))
+
+	# boxplots across runs
+	dfs = {name_a: df_a, name_b: df_b}
+	plot_boxplots_for_comparison(dfs, os.path.join(out_a, 'box_afr.png'), afr_col)
+	plot_boxplots_for_comparison(dfs, os.path.join(out_a, 'box_rpm.png'), 'engine_speed_rpm')
+	plot_boxplots_for_comparison(dfs, os.path.join(out_a, 'box_throttle.png'), 'throttle')
+
+	# scatter AFR vs RPM colored by throttle for each run (saved separately)
+	plot_afr_vs_rpm(df_a, os.path.join(out_a, f'{name_a}_afr_vs_rpm.png'))
+	plot_afr_vs_rpm(df_b, os.path.join(out_a, f'{name_b}_afr_vs_rpm.png'))
 
 	# copy into other folder so both see the comparison
 	import shutil

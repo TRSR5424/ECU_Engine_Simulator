@@ -1,0 +1,10 @@
+# -1 indicates a constant value for the entire simulation duration
+# Otherwise the keys represent the number of steps at which the value changes
+
+# Throttle schedule: keys are simulation step indices where value changes.
+# Starts at 0 with a low idle throttle, increases in steps, then settles.
+throttle: {-1: 0.2, 0: 0.2, 3: 0.4, 8: 0.6, 20: 0.3}
+
+# Target air-fuel ratio (AFR) schedule: values in lambda or AFR units (here AFR).
+# Starts at stoichiometric, briefly goes richer for load, then leans out.
+target_air_fuel_ratio: {-1: 14.7, 0: 14.7, 10: 13.2, 20: 14.0, 40: 15.5}

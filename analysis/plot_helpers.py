@@ -27,7 +27,14 @@ def _save_fig(fig, out_path: str):
     plt.close(fig)
 
 
-def plot_afr(df: pd.DataFrame, out_path: str, label: str = None):
+def _first_existing_column(df: pd.DataFrame, candidates: list[str]) -> str | None:
+    for candidate in candidates:
+        if candidate in df.columns:
+            return candidate
+    return None
+
+
+def plot_afr(df: pd.DataFrame, out_path: str, label: str | None = None):
     fig, ax = plt.subplots()
     ycol = 'measured_air_fuel_ratio' if 'measured_air_fuel_ratio' in df.columns else 'air_fuel_ratio'
     ax.plot(df['time'], df[ycol], label=label or ycol)
@@ -39,7 +46,7 @@ def plot_afr(df: pd.DataFrame, out_path: str, label: str = None):
     _save_fig(fig, out_path)
 
 
-def plot_rpm(df: pd.DataFrame, out_path: str, label: str = None):
+def plot_rpm(df: pd.DataFrame, out_path: str, label: str | None = None):
     fig, ax = plt.subplots()
     col = 'engine_speed_rpm' if 'engine_speed_rpm' in df.columns else 'rpm'
     ax.plot(df['time'], df[col], label=label or col)
@@ -51,7 +58,7 @@ def plot_rpm(df: pd.DataFrame, out_path: str, label: str = None):
     _save_fig(fig, out_path)
 
 
-def plot_throttle(df: pd.DataFrame, out_path: str, label: str = None):
+def plot_throttle(df: pd.DataFrame, out_path: str, label: str | None = None):
     fig, ax = plt.subplots()
     col = 'throttle' if 'throttle' in df.columns else 'throttle_input'
     ax.plot(df['time'], df[col], label=label or col)
@@ -63,7 +70,13 @@ def plot_throttle(df: pd.DataFrame, out_path: str, label: str = None):
     _save_fig(fig, out_path)
 
 
-def plot_comparison(df_a: pd.DataFrame, df_b: pd.DataFrame, column: str, out_path: str, labels: Tuple[str, str] = (None, None)):
+def plot_comparison(
+    df_a: pd.DataFrame,
+    df_b: pd.DataFrame,
+    column: str,
+    out_path: str,
+    labels: Tuple[str | None, str | None] = (None, None),
+):
     fig, ax = plt.subplots()
     ax.plot(df_a['time'], df_a[column], label=labels[0] or 'A')
     ax.plot(df_b['time'], df_b[column], label=labels[1] or 'B')
@@ -118,7 +131,12 @@ def plot_air_fuel_masses(df: pd.DataFrame, out_path: str):
 
 
 def plot_cumulative_fuel(df: pd.DataFrame, out_path: str):
-    fuel = df.get('fuel_mass') if 'fuel_mass' in df.columns else df.get('fuel_injection', pd.Series([0]*len(df)))
+    if 'fuel_mass' in df.columns:
+        fuel = df['fuel_mass']
+    elif 'fuel_injection' in df.columns:
+        fuel = df['fuel_injection']
+    else:
+        fuel = pd.Series([0] * len(df), index=df.index)
     cum = fuel.cumsum()
     fig, ax = plt.subplots()
     ax.plot(df['time'], cum)
@@ -139,7 +157,8 @@ def plot_afr_hist(df: pd.DataFrame, out_path: str):
 
 def plot_afr_vs_rpm(df: pd.DataFrame, out_path: str):
     fig, ax = plt.subplots()
-    c = df.get('throttle', df.get('throttle_input', None))
+    throttle_col = _first_existing_column(df, ['throttle', 'throttle_input'])
+    c = df[throttle_col] if throttle_col is not None else None
     sc = ax.scatter(df['engine_speed_rpm'], df.get('measured_air_fuel_ratio', df.get('air_fuel_ratio', np.nan)), c=c, s=6, cmap='viridis')
     ax.set_xlabel('RPM')
     ax.set_ylabel('AFR')
@@ -151,14 +170,15 @@ def plot_afr_vs_rpm(df: pd.DataFrame, out_path: str):
 
 def plot_throttle_vs_rpm(df: pd.DataFrame, out_path: str):
     fig, ax = plt.subplots()
-    ax.scatter(df['engine_speed_rpm'], df.get('throttle', df.get('throttle_input', np.nan)), s=6)
+    throttle_col = _first_existing_column(df, ['throttle', 'throttle_input'])
+    ax.scatter(df['engine_speed_rpm'], df[throttle_col] if throttle_col is not None else np.nan, s=6)
     ax.set_xlabel('RPM')
     ax.set_ylabel('throttle')
     ax.set_title('Throttle vs RPM')
     _save_fig(fig, out_path)
 
 
-def plot_rolling_stats(df: pd.DataFrame, out_path: str, column: str = None, window: int = 50):
+def plot_rolling_stats(df: pd.DataFrame, out_path: str, column: str | None = None, window: int = 50):
     if column is None:
         column = 'measured_air_fuel_ratio' if 'measured_air_fuel_ratio' in df.columns else 'air_fuel_ratio'
     ser = df[column].rolling(window=window)
@@ -175,11 +195,20 @@ def plot_rolling_stats(df: pd.DataFrame, out_path: str, column: str = None, wind
 
 
 def plot_psd(df: pd.DataFrame, out_path: str, column: str = 'engine_speed_rpm'):
-    x = df[column].dropna().values
+    x = df[column].dropna().to_numpy(dtype=float)
     if len(x) < 2:
         return
     n = len(x)
-    xf = np.fft.rfftfreq(n, d=(df['time'].iloc[1] - df['time'].iloc[0]))
+    # compute time spacing from positive unique deltas so duplicate timestamps do not zero it out
+    time_values = df['time'].dropna().to_numpy(dtype=float)
+    deltas = np.diff(time_values)
+    positive_deltas = deltas[deltas > 0]
+    if positive_deltas.size == 0:
+        return
+    d = float(np.median(positive_deltas))
+    if d <= 0:
+        return
+    xf = np.fft.rfftfreq(n, d=d)
     yf = np.abs(np.fft.rfft(x - x.mean()))
     fig, ax = plt.subplots()
     ax.plot(xf, yf)
@@ -189,35 +218,33 @@ def plot_psd(df: pd.DataFrame, out_path: str, column: str = 'engine_speed_rpm'):
     _save_fig(fig, out_path)
 
 
-def plot_correlation_heatmap(df: pd.DataFrame, out_path: str, columns: list = None):
+def plot_correlation_heatmap(df: pd.DataFrame, out_path: str, columns: list[str] | None = None):
     if columns is None:
-        columns = ['measured_air_fuel_ratio' if 'measured_air_fuel_ratio' in df.columns else 'air_fuel_ratio', 'engine_speed_rpm', 'throttle']
+        throttle_col = _first_existing_column(df, ['throttle', 'throttle_input'])
+        columns = [
+            'measured_air_fuel_ratio' if 'measured_air_fuel_ratio' in df.columns else 'air_fuel_ratio',
+            'engine_speed_rpm',
+        ]
+        if throttle_col is not None:
+            columns.append(throttle_col)
     cols = [c for c in columns if c in df.columns]
     if len(cols) < 2:
         return
-    corr = df[cols].corr()
+    corr = df[cols].corr().fillna(0)
+    constant_cols = [c for c in cols if df[c].nunique(dropna=True) <= 1]
     fig, ax = plt.subplots()
     im = ax.imshow(corr, vmin=-1, vmax=1, cmap='RdBu')
     ax.set_xticks(range(len(cols)))
     ax.set_yticks(range(len(cols)))
     ax.set_xticklabels(cols, rotation=45, ha='right')
     ax.set_yticklabels(cols)
+    for row_index in range(len(cols)):
+        for col_index in range(len(cols)):
+            value = corr.iloc[row_index, col_index]
+            ax.text(col_index, row_index, f'{value:.2f}', ha='center', va='center', color='black', fontsize=8)
     fig.colorbar(im, ax=ax)
-    ax.set_title('Correlation heatmap')
-    _save_fig(fig, out_path)
-
-
-def plot_boxplots_for_comparison(dfs: dict, out_path: str, column: str, labels: list = None):
-    # dfs: {label: df}
-    data = []
-    labs = []
-    for k, df in dfs.items():
-        if column in df.columns:
-            data.append(df[column].dropna())
-            labs.append(k)
-    if not data:
-        return
-    fig, ax = plt.subplots()
-    ax.boxplot(data, labels=labs)
-    ax.set_title(f'Boxplot: {column}')
+    if constant_cols:
+        ax.set_title(f"Correlation heatmap (constant: {', '.join(constant_cols)})")
+    else:
+        ax.set_title('Correlation heatmap')
     _save_fig(fig, out_path)

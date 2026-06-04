@@ -9,6 +9,13 @@ Saves plots into the experiment folder. If `--other` is provided, creates
 import argparse
 import os
 import shutil
+import sys
+from pathlib import Path
+
+# Always ensure project root is on sys.path so `from analysis import ...` works
+project_root = str(Path(__file__).resolve().parents[1])
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
 
 from analysis.plot_helpers import (
     find_csv_in_folder,
@@ -96,4 +103,10 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except Exception:
+        import traceback
+
+        traceback.print_exc()
+        sys.exit(1)

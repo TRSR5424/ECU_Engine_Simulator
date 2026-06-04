@@ -20,6 +20,20 @@ from analysis.plot_helpers import (
     ensure_dir,
 )
 
+from analysis.plot_helpers import (
+    plot_torque_vs_rpm,
+    plot_torque_vs_time,
+    plot_fuel_rate,
+    plot_air_fuel_masses,
+    plot_cumulative_fuel,
+    plot_afr_hist,
+    plot_afr_vs_rpm,
+    plot_throttle_vs_rpm,
+    plot_rolling_stats,
+    plot_psd,
+    plot_correlation_heatmap,
+)
+
 
 def save_single(exp_folder: str):
     csv = find_csv_in_folder(exp_folder)
@@ -27,6 +41,18 @@ def save_single(exp_folder: str):
     plot_afr(df, os.path.join(exp_folder, 'afr.png'))
     plot_rpm(df, os.path.join(exp_folder, 'rpm.png'))
     plot_throttle(df, os.path.join(exp_folder, 'throttle.png'))
+    # additional diagnostics
+    plot_torque_vs_rpm(df, os.path.join(exp_folder, 'torque_vs_rpm.png'))
+    plot_torque_vs_time(df, os.path.join(exp_folder, 'torque_vs_time.png'))
+    plot_fuel_rate(df, os.path.join(exp_folder, 'fuel_rate.png'))
+    plot_air_fuel_masses(df, os.path.join(exp_folder, 'air_fuel_masses.png'))
+    plot_cumulative_fuel(df, os.path.join(exp_folder, 'cumulative_fuel.png'))
+    plot_afr_hist(df, os.path.join(exp_folder, 'afr_hist.png'))
+    plot_afr_vs_rpm(df, os.path.join(exp_folder, 'afr_vs_rpm.png'))
+    plot_throttle_vs_rpm(df, os.path.join(exp_folder, 'throttle_vs_rpm.png'))
+    plot_rolling_stats(df, os.path.join(exp_folder, 'afr_rolling.png'), column=None)
+    plot_psd(df, os.path.join(exp_folder, 'rpm_psd.png'), column='engine_speed_rpm')
+    plot_correlation_heatmap(df, os.path.join(exp_folder, 'correlation.png'))
     # write a short report
     from analysis.report_generator import generate_report
 

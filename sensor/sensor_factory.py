@@ -7,12 +7,14 @@ from typing import Any
 
 from sensor.delayed_sensor import DelayedSensor
 from sensor.noisy_sensor import NoisySensor
-from sensor.sensor_base import Sensor, SensorBase
+from sensor.identity_sensor import IdentitySensor
+from sensor.sensor_base import SensorBase
+from sensor.sensor_base import Sensor
 
 
 _SENSOR_TYPES: dict[str, type[SensorBase]] = {
-	"fixed": Sensor,
-	"identity": Sensor,
+	"actual": Sensor,
+	"identity": IdentitySensor,
 	"noisy": NoisySensor,
 	"delayed": DelayedSensor,
 }

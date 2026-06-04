@@ -66,31 +66,6 @@ class Simulator:
             14.7,
         )
 
-        result.records.append(
-            SimulationRecord(
-                time=0.0,
-                throttle=throttle,
-                fuel_injection=self.controller.compute(
-                    ControllerInput(
-                        time_seconds=0.0,
-                        throttle_position=throttle,
-                        target_air_fuel_ratio=target_air_fuel_ratio,
-                        measured_air_fuel_ratio=measured_air_fuel_ratio,
-                        engine_speed_rpm=initial_state.engine_speed_rpm,
-                        torque=initial_state.torque,
-                        air_mass=initial_state.air_mass,
-                        fuel_mass=initial_state.fuel_mass,
-                    )
-                ),
-                air_mass=initial_state.air_mass,
-                fuel_mass=initial_state.fuel_mass,
-                air_fuel_ratio=initial_state.air_fuel_ratio,
-                measured_air_fuel_ratio=measured_air_fuel_ratio,
-                engine_speed_rpm=initial_state.engine_speed_rpm,
-                torque=initial_state.torque,
-            )
-        )
-
         for timestep in iter_timesteps(self.settings.duration, self.settings.dt):
             throttle = _resolve_scheduled_value(
                 self.settings.throttle,

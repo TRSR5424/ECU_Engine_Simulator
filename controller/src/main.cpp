@@ -1,6 +1,12 @@
 #include "ControllerFactory.h"
 #include "Controller.h"
 
+#if defined(_WIN32)
+#define CONTROLLER_API __declspec(dllexport)
+#else
+#define CONTROLLER_API
+#endif
+
 /**
  * C interface for Python ctypes binding.
  */
@@ -9,19 +15,19 @@ extern "C" {
         void* controller_ptr;
     };
 
-    ControllerHandle* create_fixed_controller() {
+    CONTROLLER_API ControllerHandle* create_fixed_controller() {
         auto* handle = new ControllerHandle();
         handle->controller_ptr = ControllerFactory::createFixedController();
         return handle;
     }
 
-    ControllerHandle* create_pid_controller(double kp, double ki, double kd, double min_out, double max_out) {
+    CONTROLLER_API ControllerHandle* create_pid_controller(double kp, double ki, double kd, double min_out, double max_out) {
         auto* handle = new ControllerHandle();
         handle->controller_ptr = ControllerFactory::createPIDController(kp, ki, kd, min_out, max_out);
         return handle;
     }
 
-    double controller_compute(
+    CONTROLLER_API double controller_compute(
         ControllerHandle* handle,
         double time_seconds,
         double throttle_position,
@@ -47,7 +53,7 @@ extern "C" {
         return controller->compute(input);
     }
 
-    void destroy_controller(ControllerHandle* handle) {
+    CONTROLLER_API void destroy_controller(ControllerHandle* handle) {
         if (!handle) return;
         auto* controller = static_cast<Controller*>(handle->controller_ptr);
         delete controller;

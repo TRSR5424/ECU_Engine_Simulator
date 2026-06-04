@@ -16,7 +16,7 @@ class SimulationRecord:
 	air_mass: float
 	fuel_mass: float
 	air_fuel_ratio: float
-	measeured_air_fuel_ratio: float
+	measured_air_fuel_ratio: float
 	engine_speed_rpm: float
 	torque: float
 
@@ -31,7 +31,7 @@ class CsvLogger:
 		"air_mass",
 		"fuel_mass",
 		"air_fuel_ratio",
-		"measeured_air_fuel_ratio",
+		"measured_air_fuel_ratio",
 		"engine_speed_rpm",
 		"torque",
 	]
@@ -52,7 +52,7 @@ class CsvLogger:
 						record.air_mass,
 						record.fuel_mass,
 						record.air_fuel_ratio,
-						record.measeured_air_fuel_ratio,
+						record.measured_air_fuel_ratio,
 						record.engine_speed_rpm,
 						record.torque,
 					]

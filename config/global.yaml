@@ -6,4 +6,4 @@ simulation:
   timestep_seconds: 0.1
 
 logging:
-  output_csv: data/simulation_output.csv
+  output_csv: data/

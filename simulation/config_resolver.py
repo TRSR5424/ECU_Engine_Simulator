@@ -89,7 +89,7 @@ def load_runtime_config(config_root: str | Path = "config") -> RuntimeConfig:
             "timestep_seconds": float(simulation_config.get("timestep_seconds", 0.1)),
         },
         logging={
-            "output_csv": str(logging_config.get("output_csv", "data/simulation_output.csv")),
+            "output_csv": str(logging_config.get("output_csv", "data/{active_experiment}/")),
         },
         engine=engine_config,
         controller=controller_config,

@@ -35,7 +35,7 @@ def main() -> None:
     simulator = Simulator(settings=simulation_settings, engine=engine, controller=controller, sensor=sensor)
     result = simulator.run()
 
-    CsvLogger().write(runtime_config.logging["output_csv"], result.records)
+    CsvLogger(run_config=runtime_config).write(runtime_config.logging["output_csv"], result.records)
 
     final_record = result.records[-1]
     print(

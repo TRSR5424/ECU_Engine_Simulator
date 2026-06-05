@@ -55,10 +55,18 @@ def compare(a_folder: str, b_folder: str):
 
 def main():
 	p = argparse.ArgumentParser()
-	p.add_argument('a')
-	p.add_argument('b')
+	p.add_argument('-a')
+	p.add_argument('-b')
 	args = p.parse_args()
-	compare(args.a, args.b)
+	
+	exp1 = args.a
+	exp2 = args.b
+	
+	if exp1 == None or exp2 == None:
+		exp1 = input("Please input experiment 1: ")
+		exp2 = input("Please input experiment 2: ")
+  
+	compare(exp1, exp2)
 
 
 if __name__ == '__main__':

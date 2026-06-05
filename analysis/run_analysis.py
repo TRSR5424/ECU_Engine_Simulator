@@ -90,13 +90,20 @@ def save_comparison(a_folder: str, b_folder: str):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('experiment', help='Path to experiment folder containing CSV output')
+    p.add_argument('-experiment', help='Path to experiment folder containing CSV output')
     p.add_argument('--other', help='Optional other experiment folder to compare against')
     args = p.parse_args()
 
     exp = args.experiment
+    
+    if exp == None:
+        exp = input("Please input experiment: ")
+        
     other = args.other
-    if other:
+    if other == None:
+        other = input("Please input experiment (click 'enter' to skip) to compare: ")
+        
+    if other != "":
         save_comparison(exp, other)
     else:
         save_single(exp)

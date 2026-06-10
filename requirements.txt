@@ -4,3 +4,4 @@ matplotlib
 pytest
 pyyaml
 pandas
+fastapi[standard]

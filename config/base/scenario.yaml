@@ -1,0 +1,5 @@
+# -1 indicates a constant value for the entire simulation duration
+# Otherwise the keys represent the number of steps at which the value changes
+
+throttle: {-1: 0.6}
+target_air_fuel_ratio: {-1: 14.7}

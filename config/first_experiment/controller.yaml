@@ -1,6 +1,0 @@
-type: pid
-kp: 0.2
-ki: 0.1
-kd: 0.01
-min_out: 0.0
-max_out: 1.0

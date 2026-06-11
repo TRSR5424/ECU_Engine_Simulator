@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from dependencies import verify_api_key
+from control_api.dependencies import verify_api_key
 
 router = APIRouter(
     prefix="/other",

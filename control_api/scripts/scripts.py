@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 
 from control_api.dependencies import verify_api_key
 
-import scripts_service as service
+import control_api.scripts.scripts_service as service
 
 router = APIRouter(
     prefix="/scripts",

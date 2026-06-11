@@ -1,14 +1,18 @@
 from fastapi import FastAPI, Depends
 
-from dependencies import verify_api_key
+from control_api.dependencies import verify_api_key
 
-import otherFile
-import results.results as results
+import control_api.otherFile as otherFile
+import control_api.results.results as results
+import control_api.scripts.scripts as scripts
+import control_api.settings.settings as settings
 
 app = FastAPI()
 
 app.include_router(otherFile.router)
 app.include_router(results.router)
+app.include_router(scripts.router)
+app.include_router(settings.router)
 
 @app.get("/")
 async def read_root():

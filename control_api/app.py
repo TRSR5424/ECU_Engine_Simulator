@@ -1,11 +1,14 @@
 from fastapi import FastAPI, Depends
 
 from dependencies import verify_api_key
+
 import otherFile
+import results.results as results
 
 app = FastAPI()
 
 app.include_router(otherFile.router)
+app.include_router(results.router)
 
 @app.get("/")
 async def read_root():

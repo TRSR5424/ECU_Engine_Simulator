@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends
 
 from control_api.dependencies import verify_api_key
 
+import scripts_service as service
+
 router = APIRouter(
     prefix="/scripts",
     tags=["scripts"],
@@ -11,12 +13,15 @@ router = APIRouter(
 
 @router.get("/")
 async def get_scripts():
-    return {"scripts": "Here are the available scripts!"}
+    scripts = service.get_scripts()
+    return scripts
 
 @router.get("/run/{script_name}")
 async def run_script(script_name: str):
-    return {"script": script_name, "details": "Here are the details for the script!"}
+    results = service.run_script(script_name)
+    return results
 
 @router.get("/runall/")
 async def run_all_scripts():
-    return {"scripts": "All scripts have been run!"}
+    results = service.run_all_scripts()
+    return results

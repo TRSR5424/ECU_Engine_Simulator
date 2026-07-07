@@ -9,9 +9,13 @@ from dataclasses import dataclass
 class SensorBase(ABC):
     """Interface for sensor implementations."""
 
+    sensor_type: str = "sensor"
+    provided_signals: frozenset[str] = frozenset()
+
     @abstractmethod
     def read(self, actual_state: float) -> float:
         """Return a measured value for the provided state."""
+        raise NotImplementedError("Sensor implementations must override the read method.")
 
 
 @dataclass

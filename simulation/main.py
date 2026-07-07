@@ -16,6 +16,7 @@ from simulation.config_resolver import load_runtime_config, write_resolved_confi
 from simulation.logger import CsvLogger
 from simulation.simulator import Simulator
 from simulation.simulator import SimulationSettings
+from simulation.validator import validate
 
 
 def main() -> None:
@@ -32,6 +33,7 @@ def main() -> None:
     engine = create_engine(runtime_config.engine)
     sensor = create_sensor(runtime_config.sensor)
     controller = ControllerBridge(config=runtime_config.controller)
+    validate(engine, sensor, controller)
     simulator = Simulator(settings=simulation_settings, engine=engine, controller=controller, sensor=sensor)
     result = simulator.run()
 

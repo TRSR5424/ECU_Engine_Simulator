@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import ClassVar
 
 
 @dataclass
@@ -26,6 +27,7 @@ class EngineBase(ABC):
     """Interface for future engine implementations."""
 
     state: EngineState
+    required_sensors: ClassVar[frozenset[str]] = frozenset()
 
     @abstractmethod
     def step(self, throttle: float, fuel_injection: float, dt: float) -> EngineState:

@@ -1,0 +1,48 @@
+services:
+  control-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.control-api
+    ports:
+      - "8000:8000"
+    environment:
+      CONTROL_API_API_KEY: ${CONTROL_API_API_KEY:-MakeThisBetter.txt}
+      PYTHONUNBUFFERED: "1"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/status').read()",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  website-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.website-api
+    ports:
+      - "8001:8001"
+    environment:
+      CONTROL_API_BASE_URL: http://control-api:8000
+      CONTROL_API_API_KEY: ${CONTROL_API_API_KEY:-MakeThisBetter.txt}
+      PYTHONUNBUFFERED: "1"
+    depends_on:
+      control-api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/api/health').read()",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s

@@ -79,6 +79,22 @@ python analysis/run_analysis.py data/default --other data/first_experiment
 
 This creates plots such as `afr.png`, `rpm.png`, `throttle.png`, and additional diagnostics in the experiment folder. When you compare two folders, matching `_Comparison` folders are created in both locations with comparison plots for AFR, RPM, and throttle.
 
+Docker
+------
+
+Run both APIs with Docker Compose:
+
+```bash
+docker compose up --build
+```
+
+This starts:
+
+- Control API on `http://localhost:8000`
+- Website API on `http://localhost:8001`
+
+Inside Compose, the website API talks to the control API at `http://control-api:8000`.
+
 c++ build
 cmake -B build -DCMAKE_BUILD_TYPE=Release   
 cmake --build build --config Release                   

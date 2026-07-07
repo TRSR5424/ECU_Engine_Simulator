@@ -79,6 +79,21 @@ python analysis/run_analysis.py data/default --other data/first_experiment
 
 This creates plots such as `afr.png`, `rpm.png`, `throttle.png`, and additional diagnostics in the experiment folder. When you compare two folders, matching `_Comparison` folders are created in both locations with comparison plots for AFR, RPM, and throttle.
 
+Website
+-------
+
+The new frontend lives in [ui/website](ui/website) and uses React + TypeScript with Vite.
+
+Run it locally:
+
+```bash
+cd ui/website
+npm install
+npm run dev
+```
+
+The Vite dev server proxies `/api` requests to the website API on port `8001`.
+
 Docker
 ------
 

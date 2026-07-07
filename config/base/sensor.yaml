@@ -1,4 +1,4 @@
-type: actual
+type: oxygen_sensor
 # Calibration multiplier applied to the measured sensor value.
 scale: 1.0
 # Constant calibration offset added after scaling.

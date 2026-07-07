@@ -7,6 +7,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
+from controller.controller_models import ControllerModelBase
+from controller.controller_models import FixedControllerModel
+from controller.controller_models import PIDControllerModel
+
 
 @dataclass(frozen=True)
 class ControllerInput:
@@ -36,6 +40,7 @@ class ControllerBridge:
         self._handle: Optional[ctypes.c_void_p] = None
         self._controller_type: str = "fixed"
         self._config: dict = config or {}
+        self._controller_model: ControllerModelBase = FixedControllerModel()
 
         # Allow overriding the fallback fixed fuel injection value via config
         if config:
@@ -47,8 +52,17 @@ class ControllerBridge:
                     # keep default if parsing fails
                     pass
 
+        if self._controller_type == "pid":
+            self._controller_model = PIDControllerModel()
+        else:
+            self._controller_model = FixedControllerModel()
+
         self._load_library()
         self._create_controller()
+
+    @property
+    def required_signals(self) -> frozenset[str]:
+        return self._controller_model.required_signals
 
     def _load_library(self) -> None:
         """Locate and load the compiled C++ shared library."""

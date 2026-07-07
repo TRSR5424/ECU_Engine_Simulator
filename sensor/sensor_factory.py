@@ -8,15 +8,23 @@ from typing import Any
 from sensor.delayed_sensor import DelayedSensor
 from sensor.noisy_sensor import NoisySensor
 from sensor.identity_sensor import IdentitySensor
+from sensor.oxygen_sensor import OxygenDelayedSensor
+from sensor.oxygen_sensor import OxygenIdentitySensor
+from sensor.oxygen_sensor import OxygenNoisySensor
+from sensor.oxygen_sensor import OxygenSensor
 from sensor.sensor_base import SensorBase
 from sensor.sensor_base import Sensor
 
 
 _SENSOR_TYPES: dict[str, type[SensorBase]] = {
 	"actual": Sensor,
+	"oxygen_sensor": OxygenSensor,
 	"identity": IdentitySensor,
+	"oxygen_identity": OxygenIdentitySensor,
 	"noisy": NoisySensor,
+	"oxygen_noisy": OxygenNoisySensor,
 	"delayed": DelayedSensor,
+	"oxygen_delayed": OxygenDelayedSensor,
 }
 
 
@@ -24,7 +32,7 @@ def create_sensor(config: dict[str, Any] | None = None) -> SensorBase:
 	"""Build a sensor instance from a runtime config mapping."""
 
 	sensor_config = dict(config or {})
-	sensor_type_name = str(sensor_config.pop("type", "fixed"))
+	sensor_type_name = str(sensor_config.pop("type", "oxygen_sensor"))
 
 	sensor_type = _SENSOR_TYPES.get(sensor_type_name)
 	if sensor_type is None:

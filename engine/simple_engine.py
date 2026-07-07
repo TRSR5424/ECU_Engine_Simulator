@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import ClassVar
 
 from engine.engine_base import EngineBase, EngineState
 
@@ -14,6 +15,8 @@ class SimpleEngine(EngineBase):
 	The constants are intentionally explicit so they can later move into YAML
 	configuration without changing the simulation code path.
 	"""
+
+	required_sensors: ClassVar[frozenset[str]] = frozenset({"oxygen_sensor"})
 
 	air_inflow_coeff: float
 	air_outflow_coeff: float

@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends
+from typing import Any
+
+from fastapi import APIRouter, Body, Depends
 
 from control_api.dependencies import verify_api_key
 
@@ -27,7 +29,7 @@ async def update_settings(experiment_name: str, new_settings: dict[str, dict]):
     return results
 
 @router.post("/updateGlobal/")
-async def update_global_settings(new_settings: dict[str, str]):
+async def update_global_settings(new_settings: dict[str, Any] = Body(default_factory=dict)):
     results = service.update_global_settings(new_settings)
     return results
 

@@ -3,7 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from control_api._service_utils import DATA_ROOT, list_matching_files, load_global_config, read_csv_preview
+from control_api._service_utils import (
+    DATA_ROOT,
+    list_matching_files,
+    load_global_config,
+    read_csv_preview,
+)
 
 
 def _experiment_folder(experiment_name: str) -> Path:
@@ -30,7 +35,7 @@ def get_results() -> dict[str, Any]:
     runtime_config = load_global_config()
     active_experiment = runtime_config.get("active_experiment", "default")
     if not DATA_ROOT.exists():
-        return {"active_experiment": active_experiment, "results": []}
+        return {"error": "No results found. The data root folder does not exist."}
 
     experiments = [entry for entry in sorted(DATA_ROOT.iterdir()) if entry.is_dir() and not entry.name.startswith(".")]
     return {

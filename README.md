@@ -97,7 +97,7 @@ The Vite dev server proxies `/api` requests to the website API on port `8001`.
 Docker
 ------
 
-Run both APIs with Docker Compose:
+Run the control API, website API, and frontend with Docker Compose:
 
 ```bash
 docker compose up --build
@@ -107,8 +107,11 @@ This starts:
 
 - Control API on `http://localhost:8000`
 - Website API on `http://localhost:8001`
+- Website frontend on `http://localhost:5173`
 
-Inside Compose, the website API talks to the control API at `http://control-api:8000`.
+Inside Compose, all three services mount the repository root at `/workspace`, so they share the same `analysis`, `config`, `data`, and simulator files. The frontend proxies `/api` requests to the website API, and the website API talks to the control API at `http://control-api:8000`.
+
+Anything written to `data/` is written to the host folder through that shared mount, so the results are still there after the containers stop.
 
 c++ build
 cmake -B build -DCMAKE_BUILD_TYPE=Release   

@@ -10,6 +10,7 @@ class ControllerModelBase:
     """Shared metadata for controller implementations."""
 
     required_signals: ClassVar[frozenset[str]] = frozenset()
+    engine_map: ClassVar[bool] = False
 
 
 @dataclass(frozen=True)

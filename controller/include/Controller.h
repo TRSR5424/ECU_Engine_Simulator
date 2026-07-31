@@ -16,6 +16,7 @@ struct ControllerInput {
     double torque;
     double air_mass;
     double fuel_mass;
+    char engine_map[]; // Path to the fuel map file
 };
 
 /**
@@ -26,6 +27,7 @@ class Controller {
 public:
     virtual ~Controller() = default;
     virtual double compute(const ControllerInput& input) = 0;
+    virtual double fuelMapLookup(const ControllerInput& input);
 };
 
 #endif // CONTROLLER_H

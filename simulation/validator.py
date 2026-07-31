@@ -21,6 +21,10 @@ def _as_sequence(sensors) -> list[object]:
 
 	return [sensors]
 
+def _has_map(engine) -> bool:
+	return bool(getattr(engine, "fuel_map", None))
+
+
 
 def _format_block(title: str, name: str, missing: set[str], available: set[str] | None = None) -> str:
 	lines = ["Configuration Error", title, name, "Missing"]
@@ -77,5 +81,16 @@ def validate(engine, sensors, ecu) -> None:
 				ecu.__class__.__name__,
 				missing_signals,
 				available_signal_names,
+			)
+		)
+
+	map_required = getattr(ecu, "engine_map", False)
+	if map_required and not _has_map(engine):
+		raise ConfigurationValidationError(
+			_format_block(
+				"ECU",
+				ecu.__class__.__name__,
+				{"engine_map"},
+				{"no engine map was provided"},
 			)
 		)

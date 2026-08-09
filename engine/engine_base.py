@@ -8,9 +8,9 @@ from typing import ClassVar
 
 
 @dataclass
-class EngineState:
+class BaseEngineState:
     """State tracked by the simplified engine model."""
-
+    
     air_mass: float = 1.0
     fuel_mass: float = 0.05
     engine_speed_rpm: float = 900.0
@@ -26,10 +26,16 @@ class EngineState:
 class EngineBase(ABC):
     """Interface for future engine implementations."""
 
-    state: EngineState
+    state: BaseEngineState
     required_sensors: ClassVar[frozenset[str]] = frozenset()
+    
+    def __init__(self) -> None:
+        self.state = BaseEngineState()
 
     @abstractmethod
-    def step(self, throttle: float, fuel_injection: float, dt: float) -> EngineState:
+    def step(self, throttle: float, fuel_injection: float, dt: float) -> BaseEngineState:
         """Advance the engine state by one timestep."""
+
+
+EngineState = BaseEngineState
 

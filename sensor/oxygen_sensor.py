@@ -13,22 +13,22 @@ from sensor.sensor_base import Sensor
 @dataclass
 class OxygenSensor(Sensor):
     sensor_type = "oxygen_sensor"
-    provided_signals = frozenset({"air_fuel_ratio"})
+    provided_signal = "air_fuel_ratio"
 
 
 @dataclass
 class OxygenIdentitySensor(IdentitySensor):
     sensor_type = "oxygen_sensor"
-    provided_signals = frozenset({"air_fuel_ratio"})
+    provided_signal = "air_fuel_ratio"
 
 
 @dataclass
 class OxygenNoisySensor(NoisySensor):
     sensor_type = "oxygen_sensor"
-    provided_signals = frozenset({"air_fuel_ratio"})
+    provided_signal = "air_fuel_ratio"
 
 
 @dataclass
 class OxygenDelayedSensor(DelayedSensor):
     sensor_type = "oxygen_sensor"
-    provided_signals = frozenset({"air_fuel_ratio"})
+    provided_signal = "air_fuel_ratio"

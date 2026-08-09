@@ -32,7 +32,7 @@ extern "C" {
         double time_seconds,
         double throttle_position,
         double target_air_fuel_ratio,
-        double measured_air_fuel_ratio,
+        MeasuredValues measured_values,
         double engine_speed_rpm,
         double torque,
         double air_mass,
@@ -44,7 +44,7 @@ extern "C" {
             time_seconds,
             throttle_position,
             target_air_fuel_ratio,
-            measured_air_fuel_ratio,
+            measured_values,
             engine_speed_rpm,
             torque,
             air_mass,
@@ -60,4 +60,3 @@ extern "C" {
         delete handle;
     }
 }
-

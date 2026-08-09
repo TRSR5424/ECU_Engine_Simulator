@@ -9,9 +9,11 @@ from controller.bindings.controller_bridge import ControllerBridge, ControllerIn
 from engine.engine_base import EngineBase
 from engine.engine_factory import create_engine
 from sensor.sensor_base import SensorBase
-from sensor.sensor_factory import create_sensor
+from sensor.sensor_factory import create_sensors
 from simulation.logger import SimulationRecord
 from simulation.timestep_loop import iter_timesteps
+
+from engine.engine_base import BaseEngineState
 
 
 @dataclass(frozen=True)
@@ -44,13 +46,22 @@ def _resolve_scheduled_value(value: float | dict[Any, Any], step_index: int, def
 
     return resolved_value
 
+def _resolve_sensor_values(sensors: list[SensorBase], state: BaseEngineState) -> dict[str, float]:
+    sensor_values = {}
+    for item, value in state.__dataclass_fields__.items():
+        for sensor in sensors:
+            if sensor.provided_signal == item:
+                sensor_values[item] = sensor.read(value)
+                break
+    return sensor_values
+
 
 @dataclass
 class Simulator:
     settings: SimulationSettings = field(default_factory=SimulationSettings)
     engine: EngineBase = field(default_factory=create_engine)
     controller: ControllerBridge = field(default_factory=ControllerBridge)
-    sensor: SensorBase = field(default_factory=create_sensor)
+    sensors: list[SensorBase] = field(default_factory=create_sensors)
 
     def run(self) -> SimulationResult:
         result = SimulationResult()
@@ -58,7 +69,7 @@ class Simulator:
         # get initial state record before stepping the simulation
         initial_state = self.engine.state
         state = initial_state
-        measured_air_fuel_ratio = self.sensor.read(state.air_fuel_ratio)
+        measured_values = _resolve_sensor_values(self.sensors, state)
         throttle = _resolve_scheduled_value(self.settings.throttle, 0, 0.6)
         target_air_fuel_ratio = _resolve_scheduled_value(
             self.settings.target_air_fuel_ratio,
@@ -82,7 +93,7 @@ class Simulator:
                     time_seconds=timestep.time,
                     throttle_position=throttle,
                     target_air_fuel_ratio=target_air_fuel_ratio,
-                    measured_air_fuel_ratio=measured_air_fuel_ratio,
+                    measured_values=measured_values,
                     engine_speed_rpm=state.engine_speed_rpm,
                     torque=state.torque,
                     air_mass=state.air_mass,
@@ -96,7 +107,7 @@ class Simulator:
                 dt=self.settings.dt,
             )
 
-            measured_air_fuel_ratio = self.sensor.read(state.air_fuel_ratio)
+            measured_air_fuel_ratio = measured_values.get("air_fuel_ratio", state.air_fuel_ratio)
 
             result.records.append(
                 SimulationRecord(

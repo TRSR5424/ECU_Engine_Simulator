@@ -11,7 +11,7 @@ if __package__ in (None, ""):
 
 from controller.bindings.controller_bridge import ControllerBridge
 from engine.engine_factory import create_engine
-from sensor.sensor_factory import create_sensor
+from sensor.sensor_factory import create_sensors
 from simulation.config_resolver import load_runtime_config, write_resolved_config
 from simulation.logger import CsvLogger
 from simulation.simulator import Simulator
@@ -31,10 +31,10 @@ def main() -> None:
     )
 
     engine = create_engine(runtime_config.engine)
-    sensor = create_sensor(runtime_config.sensor)
+    sensors = create_sensors(runtime_config.sensor)
     controller = ControllerBridge(config=runtime_config.controller)
-    validate(engine, sensor, controller)
-    simulator = Simulator(settings=simulation_settings, engine=engine, controller=controller, sensor=sensor)
+    validate(engine, sensors, controller)
+    simulator = Simulator(settings=simulation_settings, engine=engine, controller=controller, sensors=sensors)
     result = simulator.run()
 
     CsvLogger(run_config=runtime_config).write(runtime_config.logging["output_csv"], result.records)

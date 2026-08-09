@@ -1,11 +1,12 @@
-type: oxygen_sensor
-# Calibration multiplier applied to the measured sensor value.
-scale: 1.0
-# Constant calibration offset added after scaling.
-offset: 0.0
-# Gaussian noise standard deviation for the noisy sensor.
-noise_stddev: 0.01
-# Random seed used when the noisy sensor is enabled.
-seed: null
-# Number of simulation steps used by the delayed sensor.
-delay_steps: 1
+sensor:
+  type: oxygen_sensor
+  # Calibration multiplier applied to the measured sensor value.
+  scale: 1.0
+  # Constant calibration offset added after scaling.
+  offset: 0.0
+  # Gaussian noise standard deviation for the noisy sensor.
+  noise_stddev: 0.01
+  # Random seed used when the noisy sensor is enabled.
+  seed: null
+  # Number of simulation steps used by the delayed sensor.
+  delay_steps: 1

@@ -11,7 +11,7 @@ double MappedPIDController::compute(const ControllerInput& input)
     double fuel_map_value = fuelMapLookup(input);
 
     // PID correction component
-    double error = input.measured_air_fuel_ratio - input.target_air_fuel_ratio;
+    double error = measuredValue(input, "air_fuel_ratio") - input.target_air_fuel_ratio;
     double current_time = input.time_seconds;
 
     if (last_time_ < 0)

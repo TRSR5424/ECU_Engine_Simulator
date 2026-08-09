@@ -1,8 +1,9 @@
 #include "Controller.h"
 #include <algorithm>
-#include <string>
+#include <cstddef>
 #include <fstream>
 #include <sstream>
+#include <string>
 
 double Controller::fuelMapLookup(const ControllerInput& input) {
     std::string fuel_map_file = input.engine_map;
@@ -51,4 +52,19 @@ double Controller::fuelMapLookup(const ControllerInput& input) {
     filein.close();
 
     return std::stod(target); // Convert the string to double and return
+}
+
+double Controller::measuredValue(const ControllerInput& input, const char* name, double default_value) {
+    if (!name || !input.measured_values.items) {
+        return default_value;
+    }
+
+    for (std::size_t index = 0; index < input.measured_values.count; ++index) {
+        const MeasuredSignal& signal = input.measured_values.items[index];
+        if (signal.name && std::string(signal.name) == name) {
+            return signal.value;
+        }
+    }
+
+    return default_value;
 }

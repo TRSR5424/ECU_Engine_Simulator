@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 
+from typing import cast, Any
 
 class ConfigurationValidationError(ValueError):
     """Raised when a runtime configuration is internally incompatible."""
@@ -44,8 +45,7 @@ def validate(engine, sensors, ecu) -> None:
 
 	installed_sensors = _as_sequence(sensors)
 	installed_sensor_types = {
-		str(getattr(sensor, "sensor_type", sensor.__class__.__name__)).lower()
-		for sensor in installed_sensors
+		sensor.sensorType() for sensor in installed_sensors #It is correct figure out how to remove error
 	}
 
 	required_sensors = {
@@ -65,22 +65,22 @@ def validate(engine, sensors, ecu) -> None:
 
 	available_signals: set[str] = set()
 	for sensor in installed_sensors:
-		provided_signals = getattr(sensor, "provided_signals", frozenset())
-		available_signals.update(str(signal) for signal in provided_signals)
+		sensor = cast(Any, sensor) #THIS IS NOT CORRECT BE BETTER
+		provided_signal = sensor.providedSignal()
+		available_signals.update(str(provided_signal).lower() for provided_signal in _as_sequence(provided_signal))
 
 	required_signals = {
 		str(signal).lower()
 		for signal in getattr(ecu, "required_signals", frozenset())
 	}
-	available_signal_names = {signal.lower() for signal in available_signals}
-	missing_signals = required_signals.difference(available_signal_names)
+	missing_signals = required_signals.difference(available_signals)
 	if missing_signals:
 		raise ConfigurationValidationError(
 			_format_block(
 				"ECU",
 				ecu.__class__.__name__,
 				missing_signals,
-				available_signal_names,
+				available_signals,
 			)
 		)
 

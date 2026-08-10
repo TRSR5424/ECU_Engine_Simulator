@@ -28,7 +28,7 @@ class SimpleEngine(EngineBase):
 	configuration without changing the simulation code path.
 	"""
 
-	required_sensors: ClassVar[frozenset[str]] = frozenset({"oxygen_sensor"})
+	required_sensors: ClassVar[frozenset[str]] = frozenset({"AFR_sensor"})
 
 	air_inflow_coeff: float
 	air_outflow_coeff: float

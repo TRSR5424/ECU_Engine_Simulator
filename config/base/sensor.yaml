@@ -1,5 +1,5 @@
 sensor:
-  type: oxygen_sensor
+  type: AFR_sensor
   # Calibration multiplier applied to the measured sensor value.
   scale: 1.0
   # Constant calibration offset added after scaling.

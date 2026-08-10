@@ -1,4 +1,4 @@
-"""Oxygen sensor implementations built on the generic sensor behaviors."""
+"""AFR sensor implementations built on the generic sensor behaviors."""
 
 from __future__ import annotations
 
@@ -11,24 +11,24 @@ from sensor.sensor_base import Sensor
 
 
 @dataclass
-class OxygenSensor(Sensor):
-    sensor_type = "oxygen_sensor"
+class AFRSensor(Sensor):
+    sensor_type = "AFR_sensor"
     provided_signal = "air_fuel_ratio"
 
 
 @dataclass
-class OxygenIdentitySensor(IdentitySensor):
-    sensor_type = "oxygen_sensor"
+class AFRIdentitySensor(IdentitySensor):
+    sensor_type = "AFR_sensor"
     provided_signal = "air_fuel_ratio"
 
 
 @dataclass
-class OxygenNoisySensor(NoisySensor):
-    sensor_type = "oxygen_sensor"
+class AFRNoisySensor(NoisySensor):
+    sensor_type = "AFR_sensor"
     provided_signal = "air_fuel_ratio"
 
 
 @dataclass
-class OxygenDelayedSensor(DelayedSensor):
-    sensor_type = "oxygen_sensor"
+class AFRDelayedSensor(DelayedSensor):
+    sensor_type = "AFR_sensor"
     provided_signal = "air_fuel_ratio"

@@ -8,23 +8,23 @@ from typing import Any
 from sensor.delayed_sensor import DelayedSensor
 from sensor.noisy_sensor import NoisySensor
 from sensor.identity_sensor import IdentitySensor
-from sensor.oxygen_sensor import OxygenDelayedSensor
-from sensor.oxygen_sensor import OxygenIdentitySensor
-from sensor.oxygen_sensor import OxygenNoisySensor
-from sensor.oxygen_sensor import OxygenSensor
+from sensor.afr_sensor import AFRDelayedSensor
+from sensor.afr_sensor import AFRIdentitySensor
+from sensor.afr_sensor import AFRNoisySensor
+from sensor.afr_sensor import AFRSensor
 from sensor.sensor_base import SensorBase
 from sensor.sensor_base import Sensor
 
 
 _SENSOR_TYPES: dict[str, type[SensorBase]] = {
 	"actual": Sensor,
-	"oxygen_sensor": OxygenSensor,
+	"AFR_sensor": AFRSensor,
 	"identity": IdentitySensor,
-	"oxygen_identity": OxygenIdentitySensor,
+	"AFR_identity": AFRIdentitySensor,
 	"noisy": NoisySensor,
-	"oxygen_noisy": OxygenNoisySensor,
+	"AFR_noisy": AFRNoisySensor,
 	"delayed": DelayedSensor,
-	"oxygen_delayed": OxygenDelayedSensor,
+	"AFR_delayed": AFRDelayedSensor,
 }
 
 

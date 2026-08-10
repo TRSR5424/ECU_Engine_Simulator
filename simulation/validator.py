@@ -49,7 +49,7 @@ def validate(engine, sensors, ecu) -> None:
 	}
 
 	required_sensors = {
-		str(sensor_name).lower()
+		str(sensor_name)
 		for sensor_name in getattr(engine, "required_sensors", frozenset())
 	}
 	missing_sensors = required_sensors.difference(installed_sensor_types)

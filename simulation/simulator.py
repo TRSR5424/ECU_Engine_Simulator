@@ -48,11 +48,18 @@ def _resolve_scheduled_value(value: float | dict[Any, Any], step_index: int, def
 
 def _resolve_sensor_values(sensors: list[SensorBase], state: BaseEngineState) -> dict[str, float]:
     sensor_values = {}
-    for item, value in state.__dataclass_fields__.items():
-        for sensor in sensors:
+    state_dict = state.__dict__
+    
+    for sensor in sensors:
+        if sensor.provided_signal == "air_fuel_ratio":
+            sensor_values["air_fuel_ratio"] = sensor.read(state.air_fuel_ratio)
+            break
+        
+        for item, value in state_dict.items():
             if sensor.provided_signal == item:
                 sensor_values[item] = sensor.read(value)
                 break
+    
     return sensor_values
 
 

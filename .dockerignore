@@ -1,0 +1,10 @@
+.git
+.venv
+build
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.log
+data
+config/active

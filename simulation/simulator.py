@@ -15,13 +15,14 @@ from simulation.timestep_loop import iter_timesteps
 
 from engine.engine_base import BaseEngineState
 
-
 @dataclass(frozen=True)
 class SimulationSettings:
     duration: float = 30.0
     dt: float = 0.1
     throttle: float | dict[Any, Any] = 0.6
     target_air_fuel_ratio: float | dict[Any, Any] = 14.7
+    
+@dataclass
 
 
 @dataclass
@@ -69,66 +70,78 @@ class Simulator:
     engine: EngineBase = field(default_factory=create_engine)
     controller: ControllerBridge = field(default_factory=ControllerBridge)
     sensors: list[SensorBase] = field(default_factory=create_sensors)
+    
+    state: BaseEngineState = field(init=False)
 
+    def _simulation_step(self, timestep_index: int, timestep_time: float, previous_state: BaseEngineState) -> tuple[BaseEngineState, SimulationRecord]:
+        throttle = _resolve_scheduled_value(
+            self.settings.throttle,
+            timestep_index,
+            0.6,
+        )
+        target_air_fuel_ratio = _resolve_scheduled_value(
+            self.settings.target_air_fuel_ratio,
+            timestep_index,
+            14.7,
+        )
+        measured_values = _resolve_sensor_values(self.sensors, previous_state)
+        fuel_injection = self.controller.compute(
+            ControllerInput(
+                time_seconds=timestep_time,
+                throttle_position=throttle,
+                target_air_fuel_ratio=target_air_fuel_ratio,
+                measured_values=measured_values,
+                engine_speed_rpm=previous_state.engine_speed_rpm,
+                torque=previous_state.torque,
+                air_mass=previous_state.air_mass,
+                fuel_mass=previous_state.fuel_mass,
+            )
+        )
+
+        state = self.engine.step(
+            throttle=throttle,
+            fuel_injection=fuel_injection,
+            dt=self.settings.dt,
+        )
+
+        measured_air_fuel_ratio = measured_values.get("air_fuel_ratio", state.air_fuel_ratio)
+
+        record = SimulationRecord(
+            time=timestep_time,
+            throttle=throttle,
+            fuel_injection=fuel_injection,
+            air_mass=state.air_mass,
+            fuel_mass=state.fuel_mass,
+            air_fuel_ratio=state.air_fuel_ratio,
+            measured_air_fuel_ratio=measured_air_fuel_ratio,
+            engine_speed_rpm=state.engine_speed_rpm,
+            torque=state.torque,
+        )
+
+        return state, record
+    
+    def _setup(self) -> None:
+        self.state = self.engine.state
+    
+    def run_stepwise(self, index: int, time: float) -> SimulationResult:
+        
+        if self.state:
+            self._setup()
+        
+        result = SimulationResult()
+
+        self.state, record = self._simulation_step(index, time, self.state)
+        result.records.append(record)
+
+        return result
+    
     def run(self) -> SimulationResult:
         result = SimulationResult()
 
-        # get initial state record before stepping the simulation
-        initial_state = self.engine.state
-        state = initial_state
-        measured_values = _resolve_sensor_values(self.sensors, state)
-        throttle = _resolve_scheduled_value(self.settings.throttle, 0, 0.6)
-        target_air_fuel_ratio = _resolve_scheduled_value(
-            self.settings.target_air_fuel_ratio,
-            0,
-            14.7,
-        )
+        self._setup()
 
         for timestep in iter_timesteps(self.settings.duration, self.settings.dt):
-            throttle = _resolve_scheduled_value(
-                self.settings.throttle,
-                timestep.index,
-                0.6,
-            )
-            target_air_fuel_ratio = _resolve_scheduled_value(
-                self.settings.target_air_fuel_ratio,
-                timestep.index,
-                14.7,
-            )
-            fuel_injection = self.controller.compute(
-                ControllerInput(
-                    time_seconds=timestep.time,
-                    throttle_position=throttle,
-                    target_air_fuel_ratio=target_air_fuel_ratio,
-                    measured_values=measured_values,
-                    engine_speed_rpm=state.engine_speed_rpm,
-                    torque=state.torque,
-                    air_mass=state.air_mass,
-                    fuel_mass=state.fuel_mass,
-                )
-            )
-
-            state = self.engine.step(
-                throttle=throttle,
-                fuel_injection=fuel_injection,
-                dt=self.settings.dt,
-            )
-
-            measured_air_fuel_ratio = measured_values.get("air_fuel_ratio", state.air_fuel_ratio)
-
-            result.records.append(
-                SimulationRecord(
-                    time=timestep.time,
-                    throttle=throttle,
-                    fuel_injection=fuel_injection,
-                    air_mass=state.air_mass,
-                    fuel_mass=state.fuel_mass,
-                    air_fuel_ratio=state.air_fuel_ratio,
-                    measured_air_fuel_ratio=measured_air_fuel_ratio,
-                    engine_speed_rpm=state.engine_speed_rpm,
-                    torque=state.torque,
-                )
-            )
+            self.state, record = self._simulation_step(timestep.index, timestep.time, self.state)
+            result.records.append(record)
 
         return result
-

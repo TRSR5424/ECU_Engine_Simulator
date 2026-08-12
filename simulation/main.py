@@ -18,7 +18,6 @@ from simulation.simulator import Simulator
 from simulation.simulator import SimulationSettings
 from simulation.simulator import SimulationResult
 from simulation.validator import validate
-from simulation.timestep_loop import iter_timesteps
 
 class Main:
     """Main entry point for the fixed-parameter MVP simulation."""
@@ -62,14 +61,19 @@ class Main:
         result: SimulationResult = SimulationResult()
         match method:
             case "stepwise":
-                for timestep in iter_timesteps(simulation_settings.duration, simulation_settings.dt):
-                    while self.running_simulation or self.is_step:
-                        result = simulator.run_stepwise(timestep.index, timestep.index * timestep.time)
-                        self.is_step = False
+                timesteps = None
+                while self.running_simulation or self.is_step:
+                    result, timesteps, end = simulator.run_stepwise(timesteps=timesteps)
+                    self.is_step = False
+                    if end:
+                        break
                         
             case "stepwise_terminal":
-                for timestep in iter_timesteps(simulation_settings.duration, simulation_settings.dt):
-                    result = simulator.run_stepwise(timestep.index, timestep.index * timestep.time)
+                timesteps = None
+                while True:
+                    result, timesteps, end = simulator.run_stepwise(timesteps=timesteps)
+                    if end:
+                        break
                     
                     print(result)
                     input("Press Enter to continue to the next step...")

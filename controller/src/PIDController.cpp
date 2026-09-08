@@ -6,7 +6,7 @@ PIDController::PIDController(double kp, double ki, double kd, double min_out, do
       min_out_(min_out), max_out_(max_out) {}
 
 double PIDController::compute(const ControllerInput& input) {
-    double error = input.measured_air_fuel_ratio - input.target_air_fuel_ratio;
+    double error = measuredValue(input, "air_fuel_ratio") - input.target_air_fuel_ratio;
     double current_time = input.time_seconds;
 
     if (last_time_ < 0) {

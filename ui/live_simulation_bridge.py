@@ -1,1 +1,0 @@
-"""Live simulation bridge placeholder"""

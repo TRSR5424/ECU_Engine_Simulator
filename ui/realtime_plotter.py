@@ -1,1 +1,0 @@
-"""Realtime plotter placeholder"""

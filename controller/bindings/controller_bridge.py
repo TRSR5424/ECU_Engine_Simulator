@@ -7,6 +7,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
 
+from controller.controller_models import ControllerModelBase
+from controller.controller_models import FixedControllerModel
+from controller.controller_models import PIDControllerModel
+
 
 @dataclass(frozen=True)
 class ControllerInput:
@@ -19,11 +23,25 @@ class ControllerInput:
     time_seconds: float
     throttle_position: float
     target_air_fuel_ratio: float
-    measured_air_fuel_ratio: float
+    measured_values: dict[str, float]
     engine_speed_rpm: float
     torque: float
     air_mass: float
     fuel_mass: float
+
+
+class MeasuredSignal(ctypes.Structure):
+    _fields_ = [
+        ("name", ctypes.c_char_p),
+        ("value", ctypes.c_double),
+    ]
+
+
+class MeasuredValues(ctypes.Structure):
+    _fields_ = [
+        ("count", ctypes.c_size_t),
+        ("items", ctypes.POINTER(MeasuredSignal)),
+    ]
 
 
 class ControllerBridge:
@@ -36,6 +54,7 @@ class ControllerBridge:
         self._handle: Optional[ctypes.c_void_p] = None
         self._controller_type: str = "fixed"
         self._config: dict = config or {}
+        self._controller_model: ControllerModelBase = FixedControllerModel()
 
         # Allow overriding the fallback fixed fuel injection value via config
         if config:
@@ -47,8 +66,17 @@ class ControllerBridge:
                     # keep default if parsing fails
                     pass
 
+        if self._controller_type == "pid":
+            self._controller_model = PIDControllerModel()
+        else:
+            self._controller_model = FixedControllerModel()
+
         self._load_library()
         self._create_controller()
+
+    @property
+    def required_signals(self) -> frozenset[str]:
+        return self._controller_model.required_signals
 
     def _load_library(self) -> None:
         """Locate and load the compiled C++ shared library."""
@@ -155,7 +183,7 @@ class ControllerBridge:
             ctypes.c_double,
             ctypes.c_double,
             ctypes.c_double,
-            ctypes.c_double,
+            MeasuredValues,
             ctypes.c_double,
             ctypes.c_double,
             ctypes.c_double,
@@ -163,13 +191,24 @@ class ControllerBridge:
         ]
         self._lib.controller_compute.restype = ctypes.c_double
 
+        measured_items = [
+            MeasuredSignal(name.encode("utf-8"), float(value))
+            for name, value in input.measured_values.items()
+        ]
+
+        if measured_items:
+            measured_array = (MeasuredSignal * len(measured_items))(*measured_items)
+            native_measured_values = MeasuredValues(len(measured_items), measured_array)
+        else:
+            native_measured_values = MeasuredValues(0, ctypes.POINTER(MeasuredSignal)())
+
         return float(
             self._lib.controller_compute(
                 self._handle,
                 ctypes.c_double(input.time_seconds),
                 ctypes.c_double(input.throttle_position),
                 ctypes.c_double(input.target_air_fuel_ratio),
-                ctypes.c_double(input.measured_air_fuel_ratio),
+                native_measured_values,
                 ctypes.c_double(input.engine_speed_rpm),
                 ctypes.c_double(input.torque),
                 ctypes.c_double(input.air_mass),

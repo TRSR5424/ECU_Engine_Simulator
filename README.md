@@ -1,30 +1,6 @@
 engine-control-sim
 ===================
 
-Repository skeleton for the engine control simulator project.
-
-Structure
----------
-
-engine-control-sim/
-├── README.md
-├── requirements.txt
-├── CMakeLists.txt
-├── .gitignore
-├── config/
-├── simulation/
-├── engine/
-├── controller/
-├── reference_model/
-├── sensor/
-├── analysis/
-├── ui/
-├── data/
-├── tests/
-└── build/
-
-See the `FileStructure` file for a more detailed tree.
-
 Quick Start
 -----------
 
@@ -78,6 +54,17 @@ python analysis/run_analysis.py data/default --other data/first_experiment
 ```
 
 This creates plots such as `afr.png`, `rpm.png`, `throttle.png`, and additional diagnostics in the experiment folder. When you compare two folders, matching `_Comparison` folders are created in both locations with comparison plots for AFR, RPM, and throttle.
+
+Local run
+---------
+
+Run the simulator directly from the repository root:
+
+```bash
+python simulation/main.py
+```
+
+This project is a standalone engine-control simulator and no longer includes the separate Docker, website, or control API stack.
 
 c++ build
 cmake -B build -DCMAKE_BUILD_TYPE=Release   

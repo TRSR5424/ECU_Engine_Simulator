@@ -1,0 +1,4 @@
+Best Option:
+    Have simulator controll live ui, so it can can controll time?
+    Have main controll time, so it can controll live ui? -better then above as simulator really should on be simulator
+    Add complexity to stepwise in simulator? -better but more complexity, (Pick This)

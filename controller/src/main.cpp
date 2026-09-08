@@ -27,12 +27,24 @@ extern "C" {
         return handle;
     }
 
+    CONTROLLER_API ControllerHandle* create_mapped_pid_controller(double kp, double ki, double kd, double min_out, double max_out) {
+        auto* handle = new ControllerHandle();
+        handle->controller_ptr = ControllerFactory::createMappedPIDController(kp, ki, kd, min_out, max_out);
+        return handle;
+    }
+
+    CONTROLLER_API ControllerHandle* create_true_mapped_controller() {
+        auto* handle = new ControllerHandle();
+        handle->controller_ptr = ControllerFactory::createTrueMappedController();
+        return handle;
+    }
+
     CONTROLLER_API double controller_compute(
         ControllerHandle* handle,
         double time_seconds,
         double throttle_position,
         double target_air_fuel_ratio,
-        double measured_air_fuel_ratio,
+        MeasuredValues measured_values,
         double engine_speed_rpm,
         double torque,
         double air_mass,
@@ -44,7 +56,7 @@ extern "C" {
             time_seconds,
             throttle_position,
             target_air_fuel_ratio,
-            measured_air_fuel_ratio,
+            measured_values,
             engine_speed_rpm,
             torque,
             air_mass,
@@ -60,4 +72,3 @@ extern "C" {
         delete handle;
     }
 }
-

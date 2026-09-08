@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Iterator
 
 from controller.bindings.controller_bridge import ControllerBridge, ControllerInput
 from engine.engine_base import EngineBase
@@ -12,6 +12,8 @@ from sensor.sensor_base import SensorBase
 from sensor.sensor_factory import create_sensors
 from simulation.logger import SimulationRecord
 from simulation.timestep_loop import iter_timesteps
+from simulation.timestep_loop import Timestep
+
 
 from engine.engine_base import BaseEngineState
 
@@ -123,17 +125,28 @@ class Simulator:
     def _setup(self) -> None:
         self.state = self.engine.state
     
-    def run_stepwise(self, index: int, time: float) -> SimulationResult:
+    def run_stepwise(self, timesteps = None) -> tuple[SimulationResult, Iterator[Timestep], bool]:
+        end = False
         
-        if self.state:
+        if not self.state:
             self._setup()
-        
+            _timesteps = iter_timesteps(self.settings.duration, self.settings.dt)
+            _timestep = next(_timesteps)
+        elif type(timesteps) is Iterator[Timestep]:
+            _timesteps = timesteps
+            _timestep = next(_timesteps)
+        else:
+            raise ValueError("timesteps must be an iterator of Timestep objects")
+            
         result = SimulationResult()
 
-        self.state, record = self._simulation_step(index, time, self.state)
+        self.state, record = self._simulation_step(_timestep.index, _timestep.time, self.state)
         result.records.append(record)
+        
+        if _timestep.index >= int(self.settings.duration / self.settings.dt):
+            end = True
 
-        return result
+        return result, _timesteps, end
     
     def run(self) -> SimulationResult:
         result = SimulationResult()

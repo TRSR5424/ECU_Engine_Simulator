@@ -60,10 +60,6 @@ def save_single(exp_folder: str):
     plot_rolling_stats(df, os.path.join(exp_folder, 'afr_rolling.png'), column=None)
     plot_psd(df, os.path.join(exp_folder, 'rpm_psd.png'), column='engine_speed_rpm')
     plot_correlation_heatmap(df, os.path.join(exp_folder, 'correlation.png'))
-    # write a short report
-    from analysis.report_generator import generate_report
-
-    generate_report(df, exp_folder)
 
 
 def save_comparison(a_folder: str, b_folder: str):

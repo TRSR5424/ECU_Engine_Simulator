@@ -27,6 +27,18 @@ extern "C" {
         return handle;
     }
 
+    CONTROLLER_API ControllerHandle* create_mapped_pid_controller(double kp, double ki, double kd, double min_out, double max_out) {
+        auto* handle = new ControllerHandle();
+        handle->controller_ptr = ControllerFactory::createMappedPIDController(kp, ki, kd, min_out, max_out);
+        return handle;
+    }
+
+    CONTROLLER_API ControllerHandle* create_true_mapped_controller() {
+        auto* handle = new ControllerHandle();
+        handle->controller_ptr = ControllerFactory::createTrueMappedController();
+        return handle;
+    }
+
     CONTROLLER_API double controller_compute(
         ControllerHandle* handle,
         double time_seconds,

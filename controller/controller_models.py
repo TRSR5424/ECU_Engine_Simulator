@@ -25,3 +25,17 @@ class PIDControllerModel(ControllerModelBase):
     """Metadata for the PID controller."""
 
     required_signals: ClassVar[frozenset[str]] = frozenset({"air_fuel_ratio"})
+    
+@dataclass(frozen=True)
+class MappedPIDControllerModel(ControllerModelBase):
+    """Metadata for the Mapped PID controller."""
+
+    required_signals: ClassVar[frozenset[str]] = frozenset({"air_fuel_ratio"})
+    engine_map: ClassVar[bool] = True
+
+# High fidelity Map suggested
+@dataclass(frozen=True)
+class TrueMappedControllerModel(ControllerModelBase):
+    """Metadata for the True Mapped controller."""
+
+    engine_map: ClassVar[bool] = True

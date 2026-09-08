@@ -3,27 +3,37 @@
 
 use eframe::egui;
 
-fn main() -> eframe::Result {
-    // env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
-    let options = eframe::NativeOptions {
-        viewport: egui::ViewportBuilder::default().with_inner_size([320.0, 240.0]),
-        ..Default::default()
-    };
-    eframe::run_native(
-        "My egui App",
-        options,
-        Box::new(|cc| {
-            // This gives us image support:
-            // egui_extras::install_image_loaders(&cc.egui_ctx);
+const CONTROL_API_URL: &str = "http://127.0.0.1:8000/settings/";
+const CONTROL_API_KEY: &str = "MakeThisBetter.txt";
 
-            Ok(Box::<MyApp>::default())
-        }),
-    )
+fn get_settings() -> Result<String, String> {
+    let response = reqwest::blocking::Client::new()
+        .get(CONTROL_API_URL)
+        .header("Authorization", format!("Bearer {}", CONTROL_API_KEY))
+        .send()
+        .map_err(|err| format!("Request failed: {err}"))?;
+
+    let status = response.status();
+    if !status.is_success() {
+        let error_body = response
+            .text()
+            .unwrap_or_else(|_| "Unable to read error body".to_string());
+        return Err(format!(
+            "Settings request failed with status {}: {}",
+            status,
+            error_body
+        ));
+    }
+
+    response
+        .text()
+        .map_err(|err| format!("Failed to read response: {err}"))
 }
 
 struct MyApp {
     name: String,
     age: u32,
+    settings: String,
 }
 
 impl Default for MyApp {
@@ -31,6 +41,7 @@ impl Default for MyApp {
         Self {
             name: "Arthur".to_owned(),
             age: 42,
+            settings: "No settings loaded yet.".to_owned(),
         }
     }
 }
@@ -48,7 +59,33 @@ impl eframe::App for MyApp {
             if ui.button("Increment").clicked() {
                 self.age += 1;
             }
+            if ui.button("Load settings").clicked() {
+                match get_settings() {
+                    Ok(settings) => {
+                        self.settings = settings;
+                    }
+                    Err(error) => {
+                        self.settings = format!("Error: {error}");
+                    }
+                }
+            }
             ui.label(format!("Hello '{}', age {}", self.name, self.age));
+            ui.separator();
+            ui.heading("Settings");
+            ui.add(egui::TextEdit::multiline(&mut self.settings).desired_rows(12));
         });
     }
+}
+
+fn main() -> eframe::Result {
+    env_logger::init(); // Log to stderr (if you run with `RUST_LOG=debug`).
+    let options = eframe::NativeOptions {
+        viewport: egui::ViewportBuilder::default().with_inner_size([320.0, 240.0]),
+        ..Default::default()
+    };
+    eframe::run_native(
+        "My egui App",
+        options,
+        Box::new(|_cc| Ok(Box::<MyApp>::default())),
+    )
 }

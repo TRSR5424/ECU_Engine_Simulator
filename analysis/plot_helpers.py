@@ -4,6 +4,7 @@ from typing import Tuple
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.ticker import AutoMinorLocator
 
 
 def ensure_dir(path: str):
@@ -22,6 +23,15 @@ def load_data(csv_path: str) -> pd.DataFrame:
 
 
 def _save_fig(fig, out_path: str):
+    for ax in fig.axes:
+        if ax.get_label() != '<colorbar>':
+            ax.xaxis.set_minor_locator(AutoMinorLocator())
+            ax.yaxis.set_minor_locator(AutoMinorLocator())
+            ax.tick_params(axis='both', which='minor', direction='in', right=True)
+            ax.grid(True, which='major', linestyle='--', linewidth=0.5)
+            ax.grid(True, which='minor', linestyle='--', linewidth=0.25)
+            ax.tick_params(axis='both', which='major', direction="inout", right=True, labelsize=8)
+            
     fig.tight_layout()
     fig.savefig(out_path)
     plt.close(fig)
@@ -41,6 +51,7 @@ def plot_afr(df: pd.DataFrame, out_path: str, label: str | None = None):
     ax.set_xlabel('time')
     ax.set_ylabel('AFR')
     ax.set_title('Air-Fuel Ratio')
+    
     if label:
         ax.legend()
     _save_fig(fig, out_path)

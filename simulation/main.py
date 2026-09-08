@@ -59,16 +59,8 @@ class Main:
         simulator = Simulator(settings=simulation_settings, engine=engine, controller=controller, sensors=sensors)
 
         result: SimulationResult = SimulationResult()
-        match method:
+        match method:         
             case "stepwise":
-                timesteps = None
-                while self.running_simulation or self.is_step:
-                    result, timesteps, end = simulator.run_stepwise(timesteps=timesteps)
-                    self.is_step = False
-                    if end:
-                        break
-                        
-            case "stepwise_terminal":
                 timesteps = None
                 while True:
                     result, timesteps, end = simulator.run_stepwise(timesteps=timesteps)

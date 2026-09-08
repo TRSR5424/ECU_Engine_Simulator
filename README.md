@@ -55,39 +55,16 @@ python analysis/run_analysis.py data/default --other data/first_experiment
 
 This creates plots such as `afr.png`, `rpm.png`, `throttle.png`, and additional diagnostics in the experiment folder. When you compare two folders, matching `_Comparison` folders are created in both locations with comparison plots for AFR, RPM, and throttle.
 
-Website
--------
+Local run
+---------
 
-The new frontend lives in [ui/website](ui/website) and uses React + TypeScript with Vite.
-
-Run it locally:
+Run the simulator directly from the repository root:
 
 ```bash
-cd ui/website
-npm install
-npm run dev
+python simulation/main.py
 ```
 
-The Vite dev server proxies `/api` requests to the website API on port `8001`.
-
-Docker
-------
-
-Run the control API, website API, and frontend with Docker Compose:
-
-```bash
-docker compose up --build
-```
-
-This starts:
-
-- Control API on `http://localhost:8000`
-- Website API on `http://localhost:8001`
-- Website frontend on `http://localhost:5173`
-
-Inside Compose, all three services mount the repository root at `/workspace`, so they share the same `analysis`, `config`, `data`, and simulator files. The frontend proxies `/api` requests to the website API, and the website API talks to the control API at `http://control-api:8000`.
-
-Anything written to `data/` is written to the host folder through that shared mount, so the results are still there after the containers stop.
+This project is a standalone engine-control simulator and no longer includes the separate Docker, website, or control API stack.
 
 c++ build
 cmake -B build -DCMAKE_BUILD_TYPE=Release   

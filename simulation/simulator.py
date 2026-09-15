@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass, field
-from typing import Any, Iterator
+from typing import Any
 
 from controller.bindings.controller_bridge import ControllerBridge, ControllerInput
 from engine.engine_base import EngineBase
@@ -11,8 +12,7 @@ from engine.engine_factory import create_engine
 from sensor.sensor_base import SensorBase
 from sensor.sensor_factory import create_sensors
 from simulation.logger import SimulationRecord
-from simulation.timestep_loop import iter_timesteps
-from simulation.timestep_loop import Timestep
+from simulation.timestep_loop import calculate_step_count
 
 
 from engine.engine_base import BaseEngineState
@@ -24,13 +24,17 @@ class SimulationSettings:
     throttle: float | dict[Any, Any] = 0.6
     target_air_fuel_ratio: float | dict[Any, Any] = 14.7
     
-@dataclass
-
-
+@dataclass()
+class SimulationState:
+    engine_state: BaseEngineState
+    initial_engine_state: BaseEngineState = field(repr=False)
+    current_time: float = 0.0
+    step_index: int = 0
+    started: bool = False
+    
 @dataclass
 class SimulationResult:
     records: list[SimulationRecord] = field(default_factory=list)
-
 
 def _resolve_scheduled_value(value: float | dict[Any, Any], step_index: int, default: float) -> float:
     if not isinstance(value, dict):
@@ -68,14 +72,25 @@ def _resolve_sensor_values(sensors: list[SensorBase], state: BaseEngineState) ->
 
 @dataclass
 class Simulator:
+    state: SimulationState = field(init=False)
     settings: SimulationSettings = field(default_factory=SimulationSettings)
     engine: EngineBase = field(default_factory=create_engine)
     controller: ControllerBridge = field(default_factory=ControllerBridge)
     sensors: list[SensorBase] = field(default_factory=create_sensors)
-    
-    state: BaseEngineState = field(init=False)
 
-    def _simulation_step(self, timestep_index: int, timestep_time: float, previous_state: BaseEngineState) -> tuple[BaseEngineState, SimulationRecord]:
+    def __post_init__(self) -> None:
+        initial_engine_state = copy.deepcopy(self.engine.state)
+        self.state = SimulationState(
+            engine_state=self.engine.state,
+            initial_engine_state=initial_engine_state,
+        )
+        self.reset()
+
+    @property
+    def finished(self) -> bool:
+        return self.state.step_index >= calculate_step_count(self.settings.duration, self.settings.dt)
+
+    def _simulation_step(self, timestep_index: int, timestep_time: float, previous_state: BaseEngineState) -> SimulationRecord:
         throttle = _resolve_scheduled_value(
             self.settings.throttle,
             timestep_index,
@@ -120,41 +135,39 @@ class Simulator:
             torque=state.torque,
         )
 
-        return state, record
-    
-    def _setup(self) -> None:
-        self.state = self.engine.state
-    
-    def run_stepwise(self, timesteps = None) -> tuple[SimulationResult, Iterator[Timestep], bool]:
-        end = False
-        
-        if not self.state:
-            self._setup()
-            _timesteps = iter_timesteps(self.settings.duration, self.settings.dt)
-            _timestep = next(_timesteps)
-        elif type(timesteps) is Iterator[Timestep]:
-            _timesteps = timesteps
-            _timestep = next(_timesteps)
-        else:
-            raise ValueError("timesteps must be an iterator of Timestep objects")
-            
+        return record
+
+    def reset(self) -> None:
+        """Restore the engine and simulator clock to their construction state."""
+        self.engine.state = copy.deepcopy(self.state.initial_engine_state)
+        self.state.engine_state = self.engine.state
+        self.state.current_time = 0.0
+        self.state.step_index = 0
+        self.state.started = False
+
+    def step(self) -> SimulationRecord:
+        """Advance exactly one transition and return its resulting record."""
+        if self.finished:
+            raise RuntimeError("simulation is already finished")
+
+        record = self._simulation_step(self.state.step_index, self.state.current_time, self.engine.state)
+        self.state.engine_state = self.engine.state
+        self.state.step_index += 1
+        self.state.current_time += self.settings.dt
+        self.state.started = True
+        return record
+
+    def run_stepwise(self) -> tuple[SimulationResult, bool]:
+        """Run one transition for compatibility with the legacy CLI."""
         result = SimulationResult()
-
-        self.state, record = self._simulation_step(_timestep.index, _timestep.time, self.state)
-        result.records.append(record)
-        
-        if _timestep.index >= int(self.settings.duration / self.settings.dt):
-            end = True
-
-        return result, _timesteps, end
+        if not self.finished:
+            result.records.append(self.step())
+        return result, self.finished
     
     def run(self) -> SimulationResult:
         result = SimulationResult()
 
-        self._setup()
-
-        for timestep in iter_timesteps(self.settings.duration, self.settings.dt):
-            self.state, record = self._simulation_step(timestep.index, timestep.time, self.state)
-            result.records.append(record)
+        while not self.finished:
+            result.records.append(self.step())
 
         return result

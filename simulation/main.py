@@ -61,9 +61,8 @@ class Main:
         result: SimulationResult = SimulationResult()
         match method:         
             case "stepwise":
-                timesteps = None
                 while True:
-                    result, timesteps, end = simulator.run_stepwise(timesteps=timesteps)
+                    result, end = simulator.run_stepwise()
                     if end:
                         break
                     

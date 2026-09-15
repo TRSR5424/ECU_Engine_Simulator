@@ -14,8 +14,14 @@ class DelayedSensor(SensorBase):
 	_history: deque[float] = field(init=False, repr=False)
 
 	def __post_init__(self) -> None:
-		history_length = max(0, self.delay_steps)
+		if self.delay_steps < 0:
+			raise ValueError("delay_steps must be non-negative")
+		history_length = self.delay_steps
 		self._history = deque([0.0] * history_length, maxlen=history_length + 1)
+
+	def reset(self) -> None:
+		self._history.clear()
+		self._history.extend([0.0] * self.delay_steps)
 
 	def read(self, actual_state: float) -> float:
 		if not self._history.maxlen:

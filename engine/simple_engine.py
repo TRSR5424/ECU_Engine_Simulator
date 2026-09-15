@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+import copy
 from typing import Any, ClassVar
 
 from engine.engine_base import EngineBase, BaseEngineState
@@ -38,27 +39,34 @@ class SimpleEngine(EngineBase):
 	speed_response_coeff: float
 	init_state: dict[str, object] = field(default_factory=dict)
 	state: BaseEngineState = field(init=False)
+	_initial_state: BaseEngineState = field(init=False, repr=False)
 
 	def __post_init__(self) -> None:
 		self.state = SimpleEngineState(self.init_state)
+		self._initial_state = copy.deepcopy(self.state)
+
+	def reset(self) -> None:
+		self.state = copy.deepcopy(self._initial_state)
 
 	def step(self, throttle: float, fuel_injection: float, dt: float) -> BaseEngineState:
+		next_state = copy.deepcopy(self.state)
 		air_inflow = self.air_inflow_coeff * throttle
-		air_outflow = self.air_outflow_coeff * self.state.air_mass
-		self.state.air_mass = max(0.0, self.state.air_mass + dt * (air_inflow - air_outflow))
+		air_outflow = self.air_outflow_coeff * next_state.air_mass
+		next_state.air_mass = max(0.0, next_state.air_mass + dt * (air_inflow - air_outflow))
 
-		fuel_burn = self.fuel_burn_coeff * self.state.fuel_mass
-		self.state.fuel_mass = max(0.0, self.state.fuel_mass + dt * (fuel_injection - fuel_burn))
+		fuel_burn = self.fuel_burn_coeff * next_state.fuel_mass
+		next_state.fuel_mass = max(0.0, next_state.fuel_mass + dt * (fuel_injection - fuel_burn))
 
 		torque_from_fuel = self.torque_coeff * fuel_injection
-		load_torque = self.load_coeff * self.state.engine_speed_rpm
+		load_torque = self.load_coeff * next_state.engine_speed_rpm
 		# allow negative net torque (engine absorbing torque / braking)
 		net_torque = torque_from_fuel - load_torque
-		self.state.torque = net_torque
+		next_state.torque = net_torque
   
 		# RPM responds to the net torque (positive accelerates, negative decelerates)
 		rpm_delta = self.speed_response_coeff * net_torque
-		self.state.engine_speed_rpm = max(0.0, self.state.engine_speed_rpm + dt * rpm_delta)
+		next_state.engine_speed_rpm = max(0.0, next_state.engine_speed_rpm + dt * rpm_delta)
 
-		return self.state
+		self.state = next_state
+		return next_state
 

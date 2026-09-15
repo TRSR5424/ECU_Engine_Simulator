@@ -36,6 +36,10 @@ class EngineBase(ABC):
     def step(self, throttle: float, fuel_injection: float, dt: float) -> BaseEngineState:
         """Advance the engine state by one timestep."""
 
+    @abstractmethod
+    def reset(self) -> None:
+        """Restore the engine to its initial physical state."""
+
 
 EngineState = BaseEngineState
 

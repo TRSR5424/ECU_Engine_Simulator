@@ -16,6 +16,9 @@ class SensorBase(ABC):
     def read(self, actual_state: float) -> float:
         """Return a measured value for the provided state."""
         raise NotImplementedError("Sensor implementations must override the read method.")
+
+    def reset(self) -> None:
+        """Restore sensor runtime state to its initial condition."""
     
     def sensorType(self) -> str:
         """Return the type of this sensor."""

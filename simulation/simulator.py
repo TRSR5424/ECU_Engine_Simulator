@@ -139,7 +139,10 @@ class Simulator:
 
     def reset(self) -> None:
         """Restore the engine and simulator clock to their construction state."""
-        self.engine.state = copy.deepcopy(self.state.initial_engine_state)
+        self.engine.reset()
+        self.controller.reset()
+        for sensor in self.sensors:
+            sensor.reset()
         self.state.engine_state = self.engine.state
         self.state.current_time = 0.0
         self.state.step_index = 0

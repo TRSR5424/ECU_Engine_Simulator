@@ -17,7 +17,12 @@ class NoisySensor(SensorBase):
 	_random: Random = field(init=False, repr=False)
 
 	def __post_init__(self) -> None:
+		if self.noise_stddev < 0.0:
+			raise ValueError("noise_stddev must be non-negative")
 		self._random = Random(self.seed)
+
+	def reset(self) -> None:
+		self._random.seed(self.seed)
 
 	def read(self, actual_state: float) -> float:
 		return actual_state + self._random.gauss(0.0, self.noise_stddev)

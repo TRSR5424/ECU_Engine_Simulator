@@ -161,6 +161,17 @@ class ControllerBridge:
             # Failed to create native controller: fall back to Python.
             self._handle = None
 
+    def reset(self) -> None:
+        """Reset native controller state by safely recreating its handle."""
+        self._destroy_controller()
+        self._create_controller()
+
+    def _destroy_controller(self) -> None:
+        if self._lib and self._handle and hasattr(self._lib, "destroy_controller"):
+            self._lib.destroy_controller.argtypes = [ctypes.c_void_p]
+            self._lib.destroy_controller(self._handle)
+        self._handle = None
+
     def compute(self, input: ControllerInput) -> float:
         """Call the controller to compute fuel injection.
         
@@ -218,7 +229,5 @@ class ControllerBridge:
 
     def __del__(self):
         """Clean up the C++ controller on deletion."""
-        if self._lib and self._handle:
-            self._lib.destroy_controller.argtypes = [ctypes.c_void_p]
-            self._lib.destroy_controller(self._handle)
+        self._destroy_controller()
 

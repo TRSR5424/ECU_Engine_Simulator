@@ -39,7 +39,8 @@ def create_sensors(config: dict[str, Any] | None = None) -> list[SensorBase]:
 	sensors = []
  
 	for sensor in sensor_config.values():
-		sensor_type_name = str(sensor["type"])
+		sensor_settings = dict(sensor)
+		sensor_type_name = str(sensor_settings["type"])
 
 		sensor_type = _SENSOR_TYPES.get(sensor_type_name)
 		if sensor_type is None:
@@ -56,8 +57,8 @@ def create_sensors(config: dict[str, Any] | None = None) -> list[SensorBase]:
 
 		filtered_config: dict[str, Any] = {}
 		for field in valid_fields:
-			if field.name in sensor_config:
-				filtered_config[field.name] = sensor_config[field.name]
+			if field.name in sensor_settings:
+				filtered_config[field.name] = sensor_settings[field.name]
 				continue
 
 			if field.default is not MISSING:
@@ -70,7 +71,7 @@ def create_sensors(config: dict[str, Any] | None = None) -> list[SensorBase]:
 				f"using the default value {default_value!r}."
 			)
 
-		for key, value in sensor_config.items():
+		for key, value in sensor_settings.items():
 			if key in valid_keys:
 				filtered_config[key] = value
 			else:

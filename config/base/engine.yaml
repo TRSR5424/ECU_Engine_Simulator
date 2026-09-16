@@ -12,9 +12,9 @@ load_coeff: 0.02
 # How quickly torque changes affect engine speed.
 speed_response_coeff: 0.04
 
-#initial state of the engine
+# Initial state of the engine.
 init_state:
   air_mass: 1.0
   fuel_mass: 0.05
   engine_speed_rpm: 1000.0
-  tourque: 0.0
+  torque: 0.0

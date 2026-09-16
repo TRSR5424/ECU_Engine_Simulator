@@ -75,7 +75,11 @@ class Main:
             case _:
                 raise ValueError(f"Unknown run_mode: {method}")
 
-        CsvLogger(run_config=runtime_config).write(runtime_config.logging["output_csv"], result.records)
+        CsvLogger(run_config=runtime_config).write(
+            runtime_config.logging["output_csv"],
+            result.records,
+            simulator=simulator,
+        )
 
         final_record = result.records[-1]
         print(

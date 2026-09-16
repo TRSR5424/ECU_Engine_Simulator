@@ -25,11 +25,13 @@ class SimulationSettings:
     dt: float = 0.1
     throttle: float | dict[Any, Any] = 0.6
     target_air_fuel_ratio: float | dict[Any, Any] = 14.7
+    load_torque: float | dict[Any, Any] = 0.0
 
     def __post_init__(self) -> None:
         calculate_step_count(self.duration, self.dt)
         InputSchedule(self.throttle, "throttle", 0.0, 1.0)
         InputSchedule(self.target_air_fuel_ratio, "target_air_fuel_ratio", 0.0, None, strict_minimum=True)
+        InputSchedule(self.load_torque, "load_torque", 0.0, None)
     
 @dataclass()
 class SimulationState:
@@ -79,6 +81,7 @@ class Simulator:
                 0.0,
                 strict_minimum=True,
             ),
+            "load_torque": InputSchedule(self.settings.load_torque, "load_torque", 0.0),
         }
         initial_engine_state = copy.deepcopy(self.engine.state)
         self.state = SimulationState(
@@ -94,6 +97,7 @@ class Simulator:
     def _simulation_step(self, timestep_index: int, timestep_time: float, previous_state: BaseEngineState) -> SimulationRecord:
         throttle = self.input_schedule["throttle"].resolve(timestep_index)
         target_air_fuel_ratio = self.input_schedule["target_air_fuel_ratio"].resolve(timestep_index)
+        load_torque = self.input_schedule["load_torque"].resolve(timestep_index)
         measured_values = _resolve_sensor_values(self.sensors, previous_state)
         fuel_injection = self.controller.compute(
             ControllerInput(
@@ -113,6 +117,7 @@ class Simulator:
             throttle=throttle,
             fuel_injection=fuel_injection,
             dt=self.settings.dt,
+            load_torque=load_torque,
         )
         validate_engine_state(state)
 
@@ -121,6 +126,7 @@ class Simulator:
         record = SimulationRecord(
             time=timestep_time,
             throttle=throttle,
+            load_torque=load_torque,
             fuel_injection=fuel_injection,
             air_mass=state.air_mass,
             fuel_mass=state.fuel_mass,

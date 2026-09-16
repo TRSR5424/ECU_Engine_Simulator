@@ -48,7 +48,13 @@ class SimpleEngine(EngineBase):
 	def reset(self) -> None:
 		self.state = copy.deepcopy(self._initial_state)
 
-	def step(self, throttle: float, fuel_injection: float, dt: float) -> BaseEngineState:
+	def step(
+		self,
+		throttle: float,
+		fuel_injection: float,
+		dt: float,
+		load_torque: float = 0.0,
+	) -> BaseEngineState:
 		next_state = copy.deepcopy(self.state)
 		air_inflow = self.air_inflow_coeff * throttle
 		air_outflow = self.air_outflow_coeff * next_state.air_mass
@@ -58,7 +64,7 @@ class SimpleEngine(EngineBase):
 		next_state.fuel_mass = max(0.0, next_state.fuel_mass + dt * (fuel_injection - fuel_burn))
 
 		torque_from_fuel = self.torque_coeff * fuel_injection
-		load_torque = self.load_coeff * next_state.engine_speed_rpm
+		load_torque += self.load_coeff * next_state.engine_speed_rpm
 		# allow negative net torque (engine absorbing torque / braking)
 		net_torque = torque_from_fuel - load_torque
 		next_state.torque = net_torque

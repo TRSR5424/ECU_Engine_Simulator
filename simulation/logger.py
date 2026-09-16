@@ -14,6 +14,7 @@ from simulation.config_resolver import RuntimeConfig
 class SimulationRecord:
 	time: float
 	throttle: float
+	load_torque: float
 	fuel_injection: float
 	air_mass: float
 	fuel_mass: float
@@ -32,6 +33,7 @@ class CsvLogger:
 	header = [
 		"time",
 		"throttle",
+		"load_torque",
 		"fuel_injection",
 		"air_mass",
 		"fuel_mass",
@@ -76,6 +78,7 @@ class CsvLogger:
 					[
 						record.time,
 						record.throttle,
+						record.load_torque,
 						record.fuel_injection,
 						record.air_mass,
 						record.fuel_mass,

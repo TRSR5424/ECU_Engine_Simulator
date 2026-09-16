@@ -3,3 +3,4 @@
 
 throttle: {-1: 0.6}
 target_air_fuel_ratio: {-1: 14.7}
+load_torque: {-1: 0.0}

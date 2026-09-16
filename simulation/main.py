@@ -50,6 +50,7 @@ class Main:
             dt=runtime_config.simulation["timestep_seconds"],
             throttle=runtime_config.scenario.get("throttle", 0.6),
             target_air_fuel_ratio=runtime_config.scenario.get("target_air_fuel_ratio", 14.7),
+            load_torque=runtime_config.scenario.get("load_torque", 0.0),
         )
 
         engine = create_engine(runtime_config.engine)

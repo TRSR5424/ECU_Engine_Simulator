@@ -45,7 +45,7 @@ def validate(engine, sensors, ecu) -> None:
 
 	installed_sensors = _as_sequence(sensors)
 	installed_sensor_types = {
-		sensor.sensorType() for sensor in installed_sensors #It is correct figure out how to remove error
+		sensors.sensorType() for sensor in installed_sensors #It is correct figure out how to remove error
 	}
 
 	required_sensors = {

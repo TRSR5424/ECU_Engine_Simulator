@@ -1,0 +1,116 @@
+Creating a New Controller
+==========================
+
+The controller type name should be lowercase and consistent everywhere. For
+example, use "my_controller" in YAML and in the Python bridge, and use
+MyController for the C++ class.
+
+1. Add the C++ controller class
+--------------------------------
+Add these files:
+
+- controller/include/MyController.h
+- controller/src/MyController.cpp
+
+The class should inherit from Controller and implement:
+
+    double compute(const ControllerInput& input) override;
+
+Use ControllerInput fields directly, or use measuredValue(input, "signal_name")
+for values supplied by sensors. Add constructor parameters if the controller
+needs tuning values or other configuration.
+
+Use an existing controller such as PIDController or FixedController as the
+implementation pattern.
+
+2. Add it to the C++ build
+--------------------------
+Edit the root CMakeLists.txt and add the new source file to the
+controller_cpp target:
+
+    controller/src/MyController.cpp
+
+Then reconfigure and rebuild the CMake project so the DLL/shared library is
+updated in controller/bindings or the build output directory.
+
+3. Register it in the factory
+-----------------------------
+Edit controller/include/ControllerFactory.h:
+
+- Add a createMyController(...) declaration.
+
+Edit controller/src/ControllerFactory.cpp:
+
+- Include MyController.h.
+- Add the matching factory method that returns new MyController(...).
+
+4. Export the C function for Python
+------------------------------------
+Edit controller/src/main.cpp and add a C export named after the YAML type:
+
+    create_my_controller
+
+It must create a ControllerHandle and store the pointer returned by the
+factory. The name is important because controller_bridge.py builds it as:
+
+    create_<controller_type>_controller
+
+If the controller has parameters, add them to this exported function and make
+sure the Python bridge passes the same parameters in the same order.
+
+5. Add Python controller metadata
+----------------------------------
+Edit controller/controller_models.py and add a model class derived from
+ControllerModelBase.
+
+Set required_signals to the sensor signal names the controller needs. Set
+engine_map = True if the controller requires an engine fuel map.
+
+Then edit controller/bindings/controller_bridge.py:
+
+- Import the new model class.
+- Select it when self._controller_type matches the new type.
+- Add a parameter branch in _create_controller() if the native creator needs
+  arguments.
+- Read any new values from the controller configuration.
+
+Without the bridge update, an unrecognized type can fall back to the fixed
+Python behavior, and validation metadata can be incorrect.
+
+6. Select the controller in configuration
+------------------------------------------
+Edit config/base/controller.yaml for the default configuration, or edit the
+active/resolved configuration used by the experiment:
+
+    type: my_controller
+
+Add any controller-specific values at the same level, for example:
+
+    kp: 0.1
+    min_out: 0.0
+    max_out: 0.5
+
+Keep the names and types consistent with the Python bridge and C++ export.
+
+7. Verify the complete path
+---------------------------
+Check all of the following:
+
+- The class implements Controller::compute().
+- MyController.cpp is listed in CMakeLists.txt.
+- The factory declaration, include, and implementation match.
+- The exported function name matches create_<type>_controller exactly.
+- Python model selection and required_signals are correct.
+- Configuration uses the same lowercase type name.
+- The project is rebuilt before running the simulator.
+- The simulator runs with the new type and produces a controller output.
+
+For a controller with no special parameters, the minimum files to change are:
+
+- Add controller/include/MyController.h.
+- Add controller/src/MyController.cpp.
+- Add MyController.cpp to CMakeLists.txt.
+- Update ControllerFactory.h and ControllerFactory.cpp.
+- Add create_my_controller to controller/src/main.cpp.
+- Update controller_models.py and controller_bridge.py.
+- Set type: my_controller in the controller configuration.

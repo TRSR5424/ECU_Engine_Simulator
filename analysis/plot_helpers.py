@@ -24,44 +24,58 @@ def load_data(csv_path: str) -> pd.DataFrame:
 def plot_afr(df: pd.DataFrame, out_path: str, label: str | None = None):
     sns.set_theme(style="darkgrid")
     
-    graph = sns.relplot(
+    fig = sns.relplot(
         data=df,
         kind="line",
         x="time",
         y="air_fuel_ratio"
     )
     
-    graph.savefig(out_path)
+    fig.savefig(out_path)
+    
+def plot_afr_vs_target_afr(df: pd.DataFrame, out_path: str, label: str | None = None):
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+    ax2 = ax1.twinx()
+    
+    ax1.plot(df['time'], df['air_fuel_ratio'], color='blue', label='AFR')
+    ax1.set_ylabel('AFR')
+    ax1.tick_params(axis='y', labelcolor='blue')
+    
+    ax2.plot(df['time'], df['target_air_fuel_ratio'], color='orange', label='Target AFR')
+    ax2.set_ylabel('Target AFR')
+    ax2.tick_params(axis='y', labelcolor='orange')
+    
+    ax1.set_xlabel('Time')
+    
+    fig.savefig(out_path)
 
 
 def plot_rpm(df: pd.DataFrame, out_path: str, label: str | None = None):
     sns.set_theme(style="darkgrid")
     
-    graph = sns.relplot(
+    fig = sns.relplot(
         data=df,
         kind="line",
         x="time",
         y="engine_speed_rpm"
     )
     
-    graph.savefig(out_path)
+    fig.savefig(out_path)
     
 
 def plot_throttle(df: pd.DataFrame, out_path: str, label: str | None = None):
     sns.set_theme(style="darkgrid")
     
-    graph = sns.relplot(
+    fig = sns.relplot(
         data=df,
         kind="line",
         x="time",
         y="throttle"
     )
     
-    graph.savefig(out_path)
+    fig.savefig(out_path)
     
 def plot_throttle_rpm_afr(df: pd.DataFrame, out_path: str):
-    print("IDK")
-
     fig, ax1 = plt.subplots(figsize=(12, 6))
     ax2 = ax1.twinx()
     ax3 = ax1.twinx()
@@ -85,6 +99,39 @@ def plot_throttle_rpm_afr(df: pd.DataFrame, out_path: str):
     
     fig.savefig(out_path)
     
+def plot_torque_vs_rpm(df: pd.DataFrame, out_path: str):
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+    ax2 = ax1.twinx()
+        
+    ax1.plot(df['time'], df['engine_speed_rpm'], color='orange', label='RPM')
+    ax1.set_ylabel('RPM')
+    ax1.tick_params(axis='y', labelcolor='orange')
+    
+    ax2.plot(df['time'], df['torque'], color='blue', label='Torque')
+    ax2.set_ylabel('Torque')
+    ax2.tick_params(axis='y', labelcolor='blue')
+    
+    ax1.set_xlabel('Time')
+    
+    fig.savefig(out_path)
+    
+def plot_fuel_rate_with_air_mass(df: pd.DataFrame, out_path: str):
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+    ax2 = ax1.twinx()
+    
+    ax1.plot(df['time'], df['fuel_rate'], color='blue', label='Fuel Rate')
+    ax1.set_ylabel('Fuel Rate')
+    ax1.tick_params(axis='y', labelcolor='blue')
+    
+    ax2.plot(df['time'], df['air_mass'], color='orange', label='Air Mass')
+    ax2.set_ylabel('Air Mass')
+    ax2.tick_params(axis='y', labelcolor='orange')
+    
+    ax1.set_xlabel('Time')
+    
+    fig.savefig(out_path)
+
+    
 
 # def plot_comparison(
 #     df_a: pd.DataFrame,
@@ -93,34 +140,3 @@ def plot_throttle_rpm_afr(df: pd.DataFrame, out_path: str):
 #     out_path: str,
 #     labels: Tuple[str | None, str | None] = (None, None),
 #  ):
-
-
-# def plot_torque_vs_rpm(df: pd.DataFrame, out_path: str):
-
-# def plot_torque_vs_time(df: pd.DataFrame, out_path: str):
-
-
-# def plot_fuel_rate(df: pd.DataFrame, out_path: str):
-
-
-# def plot_air_fuel_masses(df: pd.DataFrame, out_path: str):
-
-
-# def plot_cumulative_fuel(df: pd.DataFrame, out_path: str):
-
-
-# def plot_afr_hist(df: pd.DataFrame, out_path: str):
-
-# def plot_afr_vs_rpm(df: pd.DataFrame, out_path: str):
-
-
-# def plot_throttle_vs_rpm(df: pd.DataFrame, out_path: str):
-
-
-# def plot_rolling_stats(df: pd.DataFrame, out_path: str, column: str | None = None, window: int = 50):
-
-
-# def plot_psd(df: pd.DataFrame, out_path: str, column: str = 'engine_speed_rpm'):
-
-
-# def plot_correlation_heatmap(df: pd.DataFrame, out_path: str, columns: list[str] | None = None):

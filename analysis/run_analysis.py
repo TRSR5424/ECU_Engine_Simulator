@@ -24,6 +24,7 @@ from analysis.plot_helpers import (
     plot_rpm,
     plot_throttle,
     plot_throttle_rpm_afr,
+    plot_torque_vs_rpm
 )
 
 def run_single(exp_folder: str):
@@ -32,6 +33,7 @@ def run_single(exp_folder: str):
     plot_rpm(data, os.path.join(exp_folder, 'rpm_plot.png'), label='RPM')
     plot_throttle(data, os.path.join(exp_folder, 'throttle_plot.png'), label='Throttle')
     plot_throttle_rpm_afr(data, os.path.join(exp_folder, 'throttle_rpm_afr_plot.png'))
+    plot_torque_vs_rpm(data, os.path.join(exp_folder, 'torque_vs_rpm_plot.png'))
 
 
 def run_comparison(a_folder: str, b_folder: str):

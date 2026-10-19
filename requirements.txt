@@ -1,4 +1,5 @@
 # Runtime and development dependencies for the simulator MVP.
+seaborn
 numpy
 matplotlib
 pytest

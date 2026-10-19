@@ -49,12 +49,12 @@ def run_single(exp_folder: str):
 
 
 def run_comparison(file: str):
-    afr_comparison_plot(file, 'data/afr_comparison_plot.png')
-    rpm_comparison_plot(file, 'data/rpm_comparison_plot.png')
-    torque_comparison_plot(file, 'data/torque_comparison_plot.png')
-    throttle_comparison_plot(file, 'data/throttle_comparison_plot.png')
-    air_mass_comparison_plot(file, 'data/air_mass_comparison_plot.png')
-    fuel_injection_comparison_plot(file, 'data/fuel_injection_comparison_plot.png')
+    afr_comparison_plot(file, 'comparison/afr_comparison_plot.png')
+    rpm_comparison_plot(file, 'comparison/rpm_comparison_plot.png')
+    torque_comparison_plot(file, 'comparison/torque_comparison_plot.png')
+    throttle_comparison_plot(file, 'comparison/throttle_comparison_plot.png')
+    air_mass_comparison_plot(file, 'comparison/air_mass_comparison_plot.png')
+    fuel_injection_comparison_plot(file, 'comparison/fuel_injection_comparison_plot.png')
 
 
 def main():

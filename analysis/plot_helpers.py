@@ -140,9 +140,7 @@ def _get_experiments_from_csv(file: str) -> list[str]:
                 experiments.append(line)
     return experiments
     
-def _create_df_for_comparison(file: str, compared_on: str, out_path: str) -> pd.DataFrame:
-    experiments = _get_experiments_from_csv(file)
-
+def _create_df_for_comparison(experiments: list[str], compared_on: str, out_path: str) -> pd.DataFrame:
     comparison_data = []
     for exp in experiments:
         loaded_data = load_data(find_csv_in_folder(exp))
@@ -158,7 +156,9 @@ def _create_df_for_comparison(file: str, compared_on: str, out_path: str) -> pd.
 def afr_comparison_plot(file: str, out_path: str):
     sns.set_theme(style="darkgrid")
     
-    df = _create_df_for_comparison(file, compared_on="air_fuel_ratio", out_path=out_path)
+    experiments = _get_experiments_from_csv(file)
+        
+    df = _create_df_for_comparison(experiments, compared_on="air_fuel_ratio", out_path=out_path)
     
     fig = sns.relplot(
         data=df,
@@ -169,12 +169,15 @@ def afr_comparison_plot(file: str, out_path: str):
         estimator=None,
     )
     
-    fig.savefig(out_path)
+    for exp in experiments:
+        fig.savefig(exp + out_path)
     
 def torque_comparison_plot(file: str, out_path: str):
     sns.set_theme(style="darkgrid")
     
-    df = _create_df_for_comparison(file, compared_on="torque", out_path=out_path)
+    experiments = _get_experiments_from_csv(file)
+    
+    df = _create_df_for_comparison(experiments, compared_on="torque", out_path=out_path)
     
     fig = sns.relplot(
         data=df,
@@ -185,12 +188,15 @@ def torque_comparison_plot(file: str, out_path: str):
         estimator=None,
     )
     
-    fig.savefig(out_path)
+    for exp in experiments:
+        fig.savefig(exp + out_path)
     
 def rpm_comparison_plot(file: str, out_path: str):
     sns.set_theme(style="darkgrid")
     
-    df = _create_df_for_comparison(file, compared_on="engine_speed_rpm", out_path=out_path)
+    experiments = _get_experiments_from_csv(file)
+        
+    df = _create_df_for_comparison(experiments, compared_on="engine_speed_rpm", out_path=out_path)
     
     fig = sns.relplot(
         data=df,
@@ -201,12 +207,15 @@ def rpm_comparison_plot(file: str, out_path: str):
         estimator=None,
     )
     
-    fig.savefig(out_path)
+    for exp in experiments:
+        fig.savefig(exp + out_path)
     
 def throttle_comparison_plot(file: str, out_path: str):
     sns.set_theme(style="darkgrid")
     
-    df = _create_df_for_comparison(file, compared_on="throttle", out_path=out_path)
+    experiments = _get_experiments_from_csv(file)
+        
+    df = _create_df_for_comparison(experiments, compared_on="throttle", out_path=out_path)
     
     fig = sns.relplot(
         data=df,
@@ -217,12 +226,15 @@ def throttle_comparison_plot(file: str, out_path: str):
         estimator=None,
     )
     
-    fig.savefig(out_path)
+    for exp in experiments:
+        fig.savefig(exp + out_path)
 
 def fuel_injection_comparison_plot(file: str, out_path: str):
     sns.set_theme(style="darkgrid")
     
-    df = _create_df_for_comparison(file, compared_on="fuel_injection", out_path=out_path)
+    experiments = _get_experiments_from_csv(file)
+        
+    df = _create_df_for_comparison(experiments, compared_on="fuel_injection", out_path=out_path)
     
     fig = sns.relplot(
         data=df,
@@ -233,12 +245,15 @@ def fuel_injection_comparison_plot(file: str, out_path: str):
         estimator=None,
     )
     
-    fig.savefig(out_path)
+    for exp in experiments:
+        fig.savefig(exp + out_path)
     
 def air_mass_comparison_plot(file: str, out_path: str):
     sns.set_theme(style="darkgrid")
     
-    df = _create_df_for_comparison(file, compared_on="air_mass", out_path=out_path)
+    experiments = _get_experiments_from_csv(file)
+        
+    df = _create_df_for_comparison(experiments, compared_on="air_mass", out_path=out_path)
     
     fig = sns.relplot(
         data=df,
@@ -249,5 +264,6 @@ def air_mass_comparison_plot(file: str, out_path: str):
         estimator=None,
     )
     
-    fig.savefig(out_path)
+    for exp in experiments:
+        fig.savefig(exp + out_path)
     

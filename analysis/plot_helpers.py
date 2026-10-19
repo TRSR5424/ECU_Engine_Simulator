@@ -130,13 +130,124 @@ def plot_fuel_rate_with_air_mass(df: pd.DataFrame, out_path: str):
     ax1.set_xlabel('Time')
     
     fig.savefig(out_path)
-
     
+def _get_experiments_from_csv(file: str) -> list[str]:
+    experiments = []
+    with open(file, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#'):
+                experiments.append(line)
+    return experiments
+    
+def _create_df_for_comparison(file: str, compared_on: str, out_path: str) -> pd.DataFrame:
+    experiments = _get_experiments_from_csv(file)
 
-# def plot_comparison(
-#     df_a: pd.DataFrame,
-#     df_b: pd.DataFrame,
-#     column: str,
-#     out_path: str,
-#     labels: Tuple[str | None, str | None] = (None, None),
-#  ):
+    comparison_data = []
+    for exp in experiments:
+        loaded_data = load_data(find_csv_in_folder(exp))
+        experiment_data = loaded_data.loc[:, ["time", compared_on]].copy()
+        experiment_data["experiment"] = os.path.basename(os.path.normpath(exp))
+        comparison_data.append(experiment_data)
+
+    if not comparison_data:
+        return pd.DataFrame(columns=["time", compared_on, "experiment"])
+
+    return pd.concat(comparison_data, ignore_index=True)
+
+def afr_comparison_plot(file: str, out_path: str):
+    sns.set_theme(style="darkgrid")
+    
+    df = _create_df_for_comparison(file, compared_on="air_fuel_ratio", out_path=out_path)
+    
+    fig = sns.relplot(
+        data=df,
+        kind="line",
+        x="time",
+        y="air_fuel_ratio",
+        hue="experiment",
+        estimator=None,
+    )
+    
+    fig.savefig(out_path)
+    
+def torque_comparison_plot(file: str, out_path: str):
+    sns.set_theme(style="darkgrid")
+    
+    df = _create_df_for_comparison(file, compared_on="torque", out_path=out_path)
+    
+    fig = sns.relplot(
+        data=df,
+        kind="line",
+        x="time",
+        y="torque",
+        hue="experiment",
+        estimator=None,
+    )
+    
+    fig.savefig(out_path)
+    
+def rpm_comparison_plot(file: str, out_path: str):
+    sns.set_theme(style="darkgrid")
+    
+    df = _create_df_for_comparison(file, compared_on="engine_speed_rpm", out_path=out_path)
+    
+    fig = sns.relplot(
+        data=df,
+        kind="line",
+        x="time",
+        y="engine_speed_rpm",
+        hue="experiment",
+        estimator=None,
+    )
+    
+    fig.savefig(out_path)
+    
+def throttle_comparison_plot(file: str, out_path: str):
+    sns.set_theme(style="darkgrid")
+    
+    df = _create_df_for_comparison(file, compared_on="throttle", out_path=out_path)
+    
+    fig = sns.relplot(
+        data=df,
+        kind="line",
+        x="time",
+        y="throttle",
+        hue="experiment",
+        estimator=None,
+    )
+    
+    fig.savefig(out_path)
+
+def fuel_rate_comparison_plot(file: str, out_path: str):
+    sns.set_theme(style="darkgrid")
+    
+    df = _create_df_for_comparison(file, compared_on="fuel_rate", out_path=out_path)
+    
+    fig = sns.relplot(
+        data=df,
+        kind="line",
+        x="time",
+        y="fuel_rate",
+        hue="experiment",
+        estimator=None,
+    )
+    
+    fig.savefig(out_path)
+    
+def air_mass_comparison_plot(file: str, out_path: str):
+    sns.set_theme(style="darkgrid")
+    
+    df = _create_df_for_comparison(file, compared_on="air_mass", out_path=out_path)
+    
+    fig = sns.relplot(
+        data=df,
+        kind="line",
+        x="time",
+        y="air_mass",
+        hue="experiment",
+        estimator=None,
+    )
+    
+    fig.savefig(out_path)
+    

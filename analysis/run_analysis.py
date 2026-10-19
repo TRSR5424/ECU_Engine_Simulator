@@ -27,7 +27,8 @@ from analysis.plot_helpers import (
     plot_torque_vs_rpm,
     plot_afr_vs_target_afr,
     plot_torque_vs_rpm,
-    plot_fuel_rate_with_air_mass
+    plot_fuel_rate_with_air_mass,
+    afr_comparison_plot,
 )
 
 def run_single(exp_folder: str):
@@ -42,28 +43,26 @@ def run_single(exp_folder: str):
     plot_fuel_rate_with_air_mass(data, os.path.join(exp_folder, 'throttle_vs_rpm_afr_plot.png'))
 
 
-def run_comparison(a_folder: str, b_folder: str):
-    print("Refactoring")
+def run_comparison(file: str):
+    afr_comparison_plot(file, 'data/afr_comparison_plot.png')
 
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('-experiment', help='Path to experiment folder containing CSV output')
-    p.add_argument('--other', help='Optional other experiment folder to compare against')
+    p.add_argument('-experiment', help='Path to experiment folder containing CSV output or CSV with paths to multiple experiment folders')
     args = p.parse_args()
 
     exp = args.experiment
     
     if exp == None:
-        exp = input("Please input experiment: ")
+        exp = input("Please input experiment (or comparison file): ")
         
-    other = args.other
-    if other == None:
-        other = input("Please input experiment (click 'enter' to skip) to compare: ")
-        
-    if other != "":
-        run_comparison(exp, other)
+    
+    if exp.endswith('.txt'):
+        # Comparison mode
+        run_comparison(exp)   
     else:
+        # Single experiment mode
         run_single(exp)
 
 

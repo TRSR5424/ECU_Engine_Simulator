@@ -115,12 +115,12 @@ def plot_torque_vs_rpm(df: pd.DataFrame, out_path: str):
     
     fig.savefig(out_path)
     
-def plot_fuel_rate_with_air_mass(df: pd.DataFrame, out_path: str):
+def plot_fuel_injection_with_air_mass(df: pd.DataFrame, out_path: str):
     fig, ax1 = plt.subplots(figsize=(12, 6))
     ax2 = ax1.twinx()
     
-    ax1.plot(df['time'], df['fuel_rate'], color='blue', label='Fuel Rate')
-    ax1.set_ylabel('Fuel Rate')
+    ax1.plot(df['time'], df['fuel_injection'], color='blue', label='Fuel Injection')
+    ax1.set_ylabel('Fuel Injection')
     ax1.tick_params(axis='y', labelcolor='blue')
     
     ax2.plot(df['time'], df['air_mass'], color='orange', label='Air Mass')
@@ -219,16 +219,16 @@ def throttle_comparison_plot(file: str, out_path: str):
     
     fig.savefig(out_path)
 
-def fuel_rate_comparison_plot(file: str, out_path: str):
+def fuel_injection_comparison_plot(file: str, out_path: str):
     sns.set_theme(style="darkgrid")
     
-    df = _create_df_for_comparison(file, compared_on="fuel_rate", out_path=out_path)
+    df = _create_df_for_comparison(file, compared_on="fuel_injection", out_path=out_path)
     
     fig = sns.relplot(
         data=df,
         kind="line",
         x="time",
-        y="fuel_rate",
+        y="fuel_injection",
         hue="experiment",
         estimator=None,
     )

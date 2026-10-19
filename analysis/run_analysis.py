@@ -27,8 +27,13 @@ from analysis.plot_helpers import (
     plot_torque_vs_rpm,
     plot_afr_vs_target_afr,
     plot_torque_vs_rpm,
-    plot_fuel_rate_with_air_mass,
+    plot_fuel_injection_with_air_mass,
     afr_comparison_plot,
+    torque_comparison_plot,
+    rpm_comparison_plot,
+    throttle_comparison_plot,
+    fuel_injection_comparison_plot,
+    air_mass_comparison_plot,
 )
 
 def run_single(exp_folder: str):
@@ -40,11 +45,16 @@ def run_single(exp_folder: str):
     plot_torque_vs_rpm(data, os.path.join(exp_folder, 'torque_vs_rpm_plot.png'))
     plot_afr_vs_target_afr(data, os.path.join(exp_folder, 'afr_vs_target_afr_plot.png'))
     plot_torque_vs_rpm(data, os.path.join(exp_folder, 'torque_vs_rpm_afr_plot.png'))
-    plot_fuel_rate_with_air_mass(data, os.path.join(exp_folder, 'throttle_vs_rpm_afr_plot.png'))
+    plot_fuel_injection_with_air_mass(data, os.path.join(exp_folder, 'throttle_vs_rpm_afr_plot.png'))
 
 
 def run_comparison(file: str):
     afr_comparison_plot(file, 'data/afr_comparison_plot.png')
+    rpm_comparison_plot(file, 'data/rpm_comparison_plot.png')
+    torque_comparison_plot(file, 'data/torque_comparison_plot.png')
+    throttle_comparison_plot(file, 'data/throttle_comparison_plot.png')
+    air_mass_comparison_plot(file, 'data/air_mass_comparison_plot.png')
+    fuel_injection_comparison_plot(file, 'data/fuel_injection_comparison_plot.png')
 
 
 def main():

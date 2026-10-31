@@ -77,6 +77,10 @@ yarn.lock
 /data/runs/
 /data/logs/
 
+analysis/*.txt
+analysis/outside_data
+analysis/results
+
 # Generated config (runtime)
 /config/active/resolved_config.yaml
 

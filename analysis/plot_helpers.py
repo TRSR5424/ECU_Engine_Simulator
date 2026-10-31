@@ -1,9 +1,8 @@
 import os
-from typing import Tuple
 
-import pandas as pd
+import seaborn as sns
 import matplotlib.pyplot as plt
-import numpy as np
+import pandas as pd
 
 
 def ensure_dir(path: str):
@@ -21,230 +20,280 @@ def load_data(csv_path: str) -> pd.DataFrame:
     return pd.read_csv(csv_path)
 
 
-def _save_fig(fig, out_path: str):
-    fig.tight_layout()
-    fig.savefig(out_path)
-    plt.close(fig)
-
-
-def _first_existing_column(df: pd.DataFrame, candidates: list[str]) -> str | None:
-    for candidate in candidates:
-        if candidate in df.columns:
-            return candidate
-    return None
-
-
 def plot_afr(df: pd.DataFrame, out_path: str, label: str | None = None):
-    fig, ax = plt.subplots()
-    ycol = 'measured_air_fuel_ratio' if 'measured_air_fuel_ratio' in df.columns else 'air_fuel_ratio'
-    ax.plot(df['time'], df[ycol], label=label or ycol)
-    ax.set_xlabel('time')
-    ax.set_ylabel('AFR')
-    ax.set_title('Air-Fuel Ratio')
-    if label:
-        ax.legend()
-    _save_fig(fig, out_path)
+    sns.set_theme(style="darkgrid")
+
+    fig = sns.relplot(
+        data=df,
+        kind="line",
+        x="time",
+        y="air_fuel_ratio"
+    )
+
+    fig.savefig(out_path)
+
+
+def plot_afr_vs_target_afr(df: pd.DataFrame, out_path: str, label: str | None = None):
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+    ax2 = ax1.twinx()
+
+    ax1.plot(df['time'], df['air_fuel_ratio'], color='blue', label='AFR')
+    ax1.set_ylabel('AFR')
+    ax1.tick_params(axis='y', labelcolor='blue')
+
+    ax2.plot(df['time'], df['target_air_fuel_ratio'],
+             color='orange', label='Target AFR')
+    ax2.set_ylabel('Target AFR')
+    ax2.tick_params(axis='y', labelcolor='orange')
+
+    ax1.set_xlabel('Time')
+
+    fig.savefig(out_path)
 
 
 def plot_rpm(df: pd.DataFrame, out_path: str, label: str | None = None):
-    fig, ax = plt.subplots()
-    col = 'engine_speed_rpm' if 'engine_speed_rpm' in df.columns else 'rpm'
-    ax.plot(df['time'], df[col], label=label or col)
-    ax.set_xlabel('time')
-    ax.set_ylabel('RPM')
-    ax.set_title('Engine Speed (RPM)')
-    if label:
-        ax.legend()
-    _save_fig(fig, out_path)
+    sns.set_theme(style="darkgrid")
+
+    fig = sns.relplot(
+        data=df,
+        kind="line",
+        x="time",
+        y="engine_speed_rpm"
+    )
+
+    fig.savefig(out_path)
 
 
 def plot_throttle(df: pd.DataFrame, out_path: str, label: str | None = None):
-    fig, ax = plt.subplots()
-    col = 'throttle' if 'throttle' in df.columns else 'throttle_input'
-    ax.plot(df['time'], df[col], label=label or col)
-    ax.set_xlabel('time')
-    ax.set_ylabel('Throttle')
-    ax.set_title('Throttle')
-    if label:
-        ax.legend()
-    _save_fig(fig, out_path)
+    sns.set_theme(style="darkgrid")
+
+    fig = sns.relplot(
+        data=df,
+        kind="line",
+        x="time",
+        y="throttle"
+    )
+
+    fig.savefig(out_path)
 
 
-def plot_comparison(
-    df_a: pd.DataFrame,
-    df_b: pd.DataFrame,
-    column: str,
-    out_path: str,
-    labels: Tuple[str | None, str | None] = (None, None),
-):
-    fig, ax = plt.subplots()
-    ax.plot(df_a['time'], df_a[column], label=labels[0] or 'A')
-    ax.plot(df_b['time'], df_b[column], label=labels[1] or 'B')
-    ax.set_xlabel('time')
-    ax.set_ylabel(column)
-    ax.set_title(f'Comparison: {column}')
-    ax.legend()
-    _save_fig(fig, out_path)
+def plot_throttle_rpm_afr(df: pd.DataFrame, out_path: str):
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+    ax2 = ax1.twinx()
+    ax3 = ax1.twinx()
+
+    ax1.plot(df['time'], df['engine_speed_rpm'], color='orange', label='RPM')
+    ax1.set_ylabel('RPM')
+    ax1.tick_params(axis='y', labelcolor='orange')
+
+    ax2.plot(df['time'], df['air_fuel_ratio'], color='blue', label='AFR')
+    ax2.set_ylabel('AFR')
+    ax2.tick_params(axis='y', labelcolor='blue')
+
+    ax3.plot(df['time'], df['throttle'], color='green')
+    ax3.set_axis_off()
+
+    ax1.set_xlabel('Time')
+
+    ax1.legend(loc='upper left')
+    ax2.legend(loc='upper right')
+    ax3.legend(loc='lower right')
+
+    fig.savefig(out_path)
 
 
 def plot_torque_vs_rpm(df: pd.DataFrame, out_path: str):
-    fig, ax = plt.subplots()
-    ax.scatter(df['engine_speed_rpm'], df['torque'], s=4)
-    ax.set_xlabel('RPM')
-    ax.set_ylabel('Torque')
-    ax.set_title('Torque vs RPM')
-    _save_fig(fig, out_path)
-
-
-def plot_torque_vs_time(df: pd.DataFrame, out_path: str):
-    fig, ax = plt.subplots()
-    ax.plot(df['time'], df['torque'])
-    ax.set_xlabel('time')
-    ax.set_ylabel('torque')
-    ax.set_title('Torque vs Time')
-    _save_fig(fig, out_path)
-
-
-def plot_fuel_rate(df: pd.DataFrame, out_path: str):
-    fig, ax = plt.subplots()
-    if 'fuel_injection' in df.columns:
-        ax.plot(df['time'], df['fuel_injection'])
-        ax.set_ylabel('fuel_injection')
-    else:
-        ax.plot(df['time'], df.get('fuel_mass', pd.Series([0]*len(df))))
-        ax.set_ylabel('fuel_mass')
-    ax.set_xlabel('time')
-    ax.set_title('Fuel Injection / Fuel Rate')
-    _save_fig(fig, out_path)
-
-
-def plot_air_fuel_masses(df: pd.DataFrame, out_path: str):
-    fig, ax1 = plt.subplots()
-    ax1.plot(df['time'], df.get('air_mass', pd.Series([0]*len(df))), color='tab:blue', label='air_mass')
-    ax1.set_xlabel('time')
-    ax1.set_ylabel('air_mass', color='tab:blue')
+    fig, ax1 = plt.subplots(figsize=(12, 6))
     ax2 = ax1.twinx()
-    ax2.plot(df['time'], df.get('fuel_mass', pd.Series([0]*len(df))), color='tab:red', label='fuel_mass')
-    ax2.set_ylabel('fuel_mass', color='tab:red')
-    fig.suptitle('Air mass and Fuel mass')
-    _save_fig(fig, out_path)
+
+    ax1.plot(df['time'], df['engine_speed_rpm'], color='orange', label='RPM')
+    ax1.set_ylabel('RPM')
+    ax1.tick_params(axis='y', labelcolor='orange')
+
+    ax2.plot(df['time'], df['torque'], color='blue', label='Torque')
+    ax2.set_ylabel('Torque')
+    ax2.tick_params(axis='y', labelcolor='blue')
+
+    ax1.set_xlabel('Time')
+
+    fig.savefig(out_path)
 
 
-def plot_cumulative_fuel(df: pd.DataFrame, out_path: str):
-    if 'fuel_mass' in df.columns:
-        fuel = df['fuel_mass']
-    elif 'fuel_injection' in df.columns:
-        fuel = df['fuel_injection']
-    else:
-        fuel = pd.Series([0] * len(df), index=df.index)
-    cum = fuel.cumsum()
-    fig, ax = plt.subplots()
-    ax.plot(df['time'], cum)
-    ax.set_xlabel('time')
-    ax.set_ylabel('cumulative_fuel')
-    ax.set_title('Cumulative Fuel Consumed')
-    _save_fig(fig, out_path)
+def plot_fuel_injection_with_air_mass(df: pd.DataFrame, out_path: str):
+    fig, ax1 = plt.subplots(figsize=(12, 6))
+    ax2 = ax1.twinx()
+
+    ax1.plot(df['time'], df['fuel_injection'],
+             color='blue', label='Fuel Injection')
+    ax1.set_ylabel('Fuel Injection')
+    ax1.tick_params(axis='y', labelcolor='blue')
+
+    ax2.plot(df['time'], df['air_mass'], color='orange', label='Air Mass')
+    ax2.set_ylabel('Air Mass')
+    ax2.tick_params(axis='y', labelcolor='orange')
+
+    ax1.set_xlabel('Time')
+
+    fig.savefig(out_path)
 
 
-def plot_afr_hist(df: pd.DataFrame, out_path: str):
-    ycol = 'measured_air_fuel_ratio' if 'measured_air_fuel_ratio' in df.columns else 'air_fuel_ratio'
-    fig, ax = plt.subplots()
-    ax.hist(df[ycol].dropna(), bins=50)
-    ax.set_xlabel('AFR')
-    ax.set_title('AFR Distribution')
-    _save_fig(fig, out_path)
+def _get_experiments_from_csv(file: str) -> list[str]:
+    experiments = []
+    with open("analysis/" + file, 'r') as f:
+        for line in f:
+            line = line.strip()
+            if line and not line.startswith('#'):
+                experiments.append(line)
+    return experiments
 
 
-def plot_afr_vs_rpm(df: pd.DataFrame, out_path: str):
-    fig, ax = plt.subplots()
-    throttle_col = _first_existing_column(df, ['throttle', 'throttle_input'])
-    c = df[throttle_col] if throttle_col is not None else None
-    sc = ax.scatter(df['engine_speed_rpm'], df.get('measured_air_fuel_ratio', df.get('air_fuel_ratio', np.nan)), c=c, s=6, cmap='viridis')
-    ax.set_xlabel('RPM')
-    ax.set_ylabel('AFR')
-    ax.set_title('AFR vs RPM (color=throttle)')
-    if c is not None:
-        fig.colorbar(sc, ax=ax, label='throttle')
-    _save_fig(fig, out_path)
+def _create_df_for_comparison(experiments: list[str], compared_on: str, out_path: str) -> pd.DataFrame:
+    comparison_data = []
+    for exp in experiments:
+        loaded_data = load_data(find_csv_in_folder(exp))
+        experiment_data = loaded_data.loc[:, ["time", compared_on]].copy()
+        experiment_data["experiment"] = os.path.basename(os.path.normpath(exp))
+        comparison_data.append(experiment_data)
+
+    if not comparison_data:
+        return pd.DataFrame(columns=["time", compared_on, "experiment"])
+
+    return pd.concat(comparison_data, ignore_index=True)
 
 
-def plot_throttle_vs_rpm(df: pd.DataFrame, out_path: str):
-    fig, ax = plt.subplots()
-    throttle_col = _first_existing_column(df, ['throttle', 'throttle_input'])
-    ax.scatter(df['engine_speed_rpm'], df[throttle_col] if throttle_col is not None else np.nan, s=6)
-    ax.set_xlabel('RPM')
-    ax.set_ylabel('throttle')
-    ax.set_title('Throttle vs RPM')
-    _save_fig(fig, out_path)
+def afr_comparison_plot(file: str, out_path: str):
+    sns.set_theme(style="darkgrid")
+
+    experiments = _get_experiments_from_csv(file)
+
+    df = _create_df_for_comparison(
+        experiments, compared_on="air_fuel_ratio", out_path=out_path)
+
+    fig = sns.relplot(
+        data=df,
+        kind="line",
+        x="time",
+        y="air_fuel_ratio",
+        hue="experiment",
+        estimator=None,
+    )
+
+    for exp in experiments:
+        if not os.path.exists(exp + "/comparison"):
+            os.makedirs(exp + "/comparison")
+        fig.savefig(exp + "/" + out_path)
 
 
-def plot_rolling_stats(df: pd.DataFrame, out_path: str, column: str | None = None, window: int = 50):
-    if column is None:
-        column = 'measured_air_fuel_ratio' if 'measured_air_fuel_ratio' in df.columns else 'air_fuel_ratio'
-    ser = df[column].rolling(window=window)
-    mean = ser.mean()
-    std = ser.std()
-    fig, ax = plt.subplots()
-    ax.plot(df['time'], mean, label='rolling_mean')
-    ax.plot(df['time'], std, label='rolling_std')
-    ax.set_xlabel('time')
-    ax.set_ylabel(column)
-    ax.set_title(f'Rolling mean/std ({column})')
-    ax.legend()
-    _save_fig(fig, out_path)
+def torque_comparison_plot(file: str, out_path: str):
+    sns.set_theme(style="darkgrid")
+
+    experiments = _get_experiments_from_csv(file)
+
+    df = _create_df_for_comparison(
+        experiments, compared_on="torque", out_path=out_path)
+
+    fig = sns.relplot(
+        data=df,
+        kind="line",
+        x="time",
+        y="torque",
+        hue="experiment",
+        estimator=None,
+    )
+
+    for exp in experiments:
+        if not os.path.exists(exp + "/comparison"):
+            os.makedirs(exp + "/comparison")
+        fig.savefig(exp + "/" + out_path)
 
 
-def plot_psd(df: pd.DataFrame, out_path: str, column: str = 'engine_speed_rpm'):
-    x = df[column].dropna().to_numpy(dtype=float)
-    if len(x) < 2:
-        return
-    n = len(x)
-    # compute time spacing from positive unique deltas so duplicate timestamps do not zero it out
-    time_values = df['time'].dropna().to_numpy(dtype=float)
-    deltas = np.diff(time_values)
-    positive_deltas = deltas[deltas > 0]
-    if positive_deltas.size == 0:
-        return
-    d = float(np.median(positive_deltas))
-    if d <= 0:
-        return
-    xf = np.fft.rfftfreq(n, d=d)
-    yf = np.abs(np.fft.rfft(x - x.mean()))
-    fig, ax = plt.subplots()
-    ax.plot(xf, yf)
-    ax.set_xlabel('frequency')
-    ax.set_ylabel('magnitude')
-    ax.set_title(f'PSD of {column}')
-    _save_fig(fig, out_path)
+def rpm_comparison_plot(file: str, out_path: str):
+    sns.set_theme(style="darkgrid")
+
+    experiments = _get_experiments_from_csv(file)
+
+    df = _create_df_for_comparison(
+        experiments, compared_on="engine_speed_rpm", out_path=out_path)
+
+    fig = sns.relplot(
+        data=df,
+        kind="line",
+        x="time",
+        y="engine_speed_rpm",
+        hue="experiment",
+        estimator=None,
+    )
+
+    for exp in experiments:
+        if not os.path.exists(exp + "/comparison"):
+            os.makedirs(exp + "/comparison")
+        fig.savefig(exp + "/" + out_path)
 
 
-def plot_correlation_heatmap(df: pd.DataFrame, out_path: str, columns: list[str] | None = None):
-    if columns is None:
-        throttle_col = _first_existing_column(df, ['throttle', 'throttle_input'])
-        columns = [
-            'measured_air_fuel_ratio' if 'measured_air_fuel_ratio' in df.columns else 'air_fuel_ratio',
-            'engine_speed_rpm',
-        ]
-        if throttle_col is not None:
-            columns.append(throttle_col)
-    cols = [c for c in columns if c in df.columns]
-    if len(cols) < 2:
-        return
-    corr = df[cols].corr().fillna(0)
-    constant_cols = [c for c in cols if df[c].nunique(dropna=True) <= 1]
-    fig, ax = plt.subplots()
-    im = ax.imshow(corr, vmin=-1, vmax=1, cmap='RdBu')
-    ax.set_xticks(range(len(cols)))
-    ax.set_yticks(range(len(cols)))
-    ax.set_xticklabels(cols, rotation=45, ha='right')
-    ax.set_yticklabels(cols)
-    for row_index in range(len(cols)):
-        for col_index in range(len(cols)):
-            value = corr.iloc[row_index, col_index]
-            ax.text(col_index, row_index, f'{value:.2f}', ha='center', va='center', color='black', fontsize=8)
-    fig.colorbar(im, ax=ax)
-    if constant_cols:
-        ax.set_title(f"Correlation heatmap (constant: {', '.join(constant_cols)})")
-    else:
-        ax.set_title('Correlation heatmap')
-    _save_fig(fig, out_path)
+def throttle_comparison_plot(file: str, out_path: str):
+    sns.set_theme(style="darkgrid")
+
+    experiments = _get_experiments_from_csv(file)
+
+    df = _create_df_for_comparison(
+        experiments, compared_on="throttle", out_path=out_path)
+
+    fig = sns.relplot(
+        data=df,
+        kind="line",
+        x="time",
+        y="throttle",
+        hue="experiment",
+        estimator=None,
+    )
+
+    for exp in experiments:
+        if not os.path.exists(exp + "/comparison"):
+            os.makedirs(exp + "/comparison")
+        fig.savefig(exp + "/" + out_path)
+
+
+def fuel_injection_comparison_plot(file: str, out_path: str):
+    sns.set_theme(style="darkgrid")
+
+    experiments = _get_experiments_from_csv(file)
+
+    df = _create_df_for_comparison(
+        experiments, compared_on="fuel_injection", out_path=out_path)
+
+    fig = sns.relplot(
+        data=df,
+        kind="line",
+        x="time",
+        y="fuel_injection",
+        hue="experiment",
+        estimator=None,
+    )
+
+    for exp in experiments:
+        if not os.path.exists(exp + "/comparison"):
+            os.makedirs(exp + "/comparison")
+        fig.savefig(exp + "/" + out_path)
+
+
+def air_mass_comparison_plot(file: str, out_path: str):
+    sns.set_theme(style="darkgrid")
+
+    experiments = _get_experiments_from_csv(file)
+
+    df = _create_df_for_comparison(
+        experiments, compared_on="air_mass", out_path=out_path)
+
+    fig = sns.relplot(
+        data=df,
+        kind="line",
+        x="time",
+        y="air_mass",
+        hue="experiment",
+        estimator=None,
+    )
+
+    for exp in experiments:
+        if not os.path.exists(exp + "/comparison"):
+            os.makedirs(exp + "/comparison")
+        fig.savefig(exp + "/" + out_path)

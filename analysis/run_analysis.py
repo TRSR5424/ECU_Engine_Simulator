@@ -23,90 +23,57 @@ from analysis.plot_helpers import (
     plot_afr,
     plot_rpm,
     plot_throttle,
-    plot_comparison,
-    ensure_dir,
-)
-
-from analysis.plot_helpers import (
+    plot_throttle_rpm_afr,
     plot_torque_vs_rpm,
-    plot_torque_vs_time,
-    plot_fuel_rate,
-    plot_air_fuel_masses,
-    plot_cumulative_fuel,
-    plot_afr_hist,
-    plot_afr_vs_rpm,
-    plot_throttle_vs_rpm,
-    plot_rolling_stats,
-    plot_psd,
-    plot_correlation_heatmap,
+    plot_afr_vs_target_afr,
+    plot_torque_vs_rpm,
+    plot_fuel_injection_with_air_mass,
+    afr_comparison_plot,
+    torque_comparison_plot,
+    rpm_comparison_plot,
+    throttle_comparison_plot,
+    fuel_injection_comparison_plot,
+    air_mass_comparison_plot,
 )
 
-
-def save_single(exp_folder: str):
-    csv = find_csv_in_folder(exp_folder)
-    df = load_data(csv)
-    plot_afr(df, os.path.join(exp_folder, 'afr.png'))
-    plot_rpm(df, os.path.join(exp_folder, 'rpm.png'))
-    plot_throttle(df, os.path.join(exp_folder, 'throttle.png'))
-    # additional diagnostics
-    plot_torque_vs_rpm(df, os.path.join(exp_folder, 'torque_vs_rpm.png'))
-    plot_torque_vs_time(df, os.path.join(exp_folder, 'torque_vs_time.png'))
-    plot_fuel_rate(df, os.path.join(exp_folder, 'fuel_rate.png'))
-    plot_air_fuel_masses(df, os.path.join(exp_folder, 'air_fuel_masses.png'))
-    plot_cumulative_fuel(df, os.path.join(exp_folder, 'cumulative_fuel.png'))
-    plot_afr_hist(df, os.path.join(exp_folder, 'afr_hist.png'))
-    plot_afr_vs_rpm(df, os.path.join(exp_folder, 'afr_vs_rpm.png'))
-    plot_throttle_vs_rpm(df, os.path.join(exp_folder, 'throttle_vs_rpm.png'))
-    plot_rolling_stats(df, os.path.join(exp_folder, 'afr_rolling.png'), column=None)
-    plot_psd(df, os.path.join(exp_folder, 'rpm_psd.png'), column='engine_speed_rpm')
-    plot_correlation_heatmap(df, os.path.join(exp_folder, 'correlation.png'))
-    # write a short report
-    from analysis.report_generator import generate_report
-
-    generate_report(df, exp_folder)
+def run_single(exp_folder: str):
+    data = load_data(find_csv_in_folder(exp_folder))
+    plot_afr(data, os.path.join(exp_folder, 'afr_plot.png'), label='AFR')
+    plot_rpm(data, os.path.join(exp_folder, 'rpm_plot.png'), label='RPM')
+    plot_throttle(data, os.path.join(exp_folder, 'throttle_plot.png'), label='Throttle')
+    plot_throttle_rpm_afr(data, os.path.join(exp_folder, 'throttle_rpm_afr_plot.png'))
+    plot_torque_vs_rpm(data, os.path.join(exp_folder, 'torque_vs_rpm_plot.png'))
+    plot_afr_vs_target_afr(data, os.path.join(exp_folder, 'afr_vs_target_afr_plot.png'))
+    plot_torque_vs_rpm(data, os.path.join(exp_folder, 'torque_vs_rpm_afr_plot.png'))
+    plot_fuel_injection_with_air_mass(data, os.path.join(exp_folder, 'throttle_vs_rpm_afr_plot.png'))
 
 
-def save_comparison(a_folder: str, b_folder: str):
-    csv_a = find_csv_in_folder(a_folder)
-    csv_b = find_csv_in_folder(b_folder)
-    df_a = load_data(csv_a)
-    df_b = load_data(csv_b)
-    name_a = os.path.basename(os.path.normpath(a_folder))
-    name_b = os.path.basename(os.path.normpath(b_folder))
-    out_a = os.path.join(a_folder, f"{name_b}_Comparison")
-    out_b = os.path.join(b_folder, f"{name_a}_Comparison")
-    ensure_dir(out_a)
-    ensure_dir(out_b)
-
-    # comparison plots saved in out_a, then copied to out_b
-    plot_comparison(df_a, df_b, 'measured_air_fuel_ratio', os.path.join(out_a, 'afr_comparison.png'), labels=(name_a, name_b))
-    plot_comparison(df_a, df_b, 'engine_speed_rpm', os.path.join(out_a, 'rpm_comparison.png'), labels=(name_a, name_b))
-    plot_comparison(df_a, df_b, 'throttle', os.path.join(out_a, 'throttle_comparison.png'), labels=(name_a, name_b))
-
-    # copy to other folder so both have the results
-    for fname in ('afr_comparison.png', 'rpm_comparison.png', 'throttle_comparison.png'):
-        shutil.copy(os.path.join(out_a, fname), os.path.join(out_b, fname))
+def run_comparison(file: str):
+    afr_comparison_plot(file, 'comparison/afr_comparison_plot.png')
+    rpm_comparison_plot(file, 'comparison/rpm_comparison_plot.png')
+    torque_comparison_plot(file, 'comparison/torque_comparison_plot.png')
+    throttle_comparison_plot(file, 'comparison/throttle_comparison_plot.png')
+    air_mass_comparison_plot(file, 'comparison/air_mass_comparison_plot.png')
+    fuel_injection_comparison_plot(file, 'comparison/fuel_injection_comparison_plot.png')
 
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('-experiment', help='Path to experiment folder containing CSV output')
-    p.add_argument('--other', help='Optional other experiment folder to compare against')
+    p.add_argument('-experiment', help='Path to experiment folder containing CSV output or CSV with paths to multiple experiment folders')
     args = p.parse_args()
 
     exp = args.experiment
     
     if exp == None:
-        exp = input("Please input experiment: ")
+        exp = input("Please input experiment (or comparison file): ")
         
-    other = args.other
-    if other == None:
-        other = input("Please input experiment (click 'enter' to skip) to compare: ")
-        
-    if other != "":
-        save_comparison(exp, other)
+    
+    if exp.endswith('.txt'):
+        # Comparison mode
+        run_comparison(exp)   
     else:
-        save_single(exp)
+        # Single experiment mode
+        run_single(exp)
 
 
 if __name__ == '__main__':

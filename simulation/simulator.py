@@ -131,6 +131,7 @@ class Simulator:
             air_mass=state.air_mass,
             fuel_mass=state.fuel_mass,
             air_fuel_ratio=state.air_fuel_ratio,
+            target_air_fuel_ratio=target_air_fuel_ratio,
             measured_air_fuel_ratio=measured_air_fuel_ratio,
             engine_speed_rpm=state.engine_speed_rpm,
             torque=state.torque,

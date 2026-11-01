@@ -31,6 +31,7 @@ class ControllerInput:
 
 
 class MeasuredSignal(ctypes.Structure):
+    """Represent the MeasuredSignal component used by the simulator."""
     _fields_ = [
         ("name", ctypes.c_char_p),
         ("value", ctypes.c_double),
@@ -38,6 +39,7 @@ class MeasuredSignal(ctypes.Structure):
 
 
 class MeasuredValues(ctypes.Structure):
+    """Represent the MeasuredValues component used by the simulator."""
     _fields_ = [
         ("count", ctypes.c_size_t),
         ("items", ctypes.POINTER(MeasuredSignal)),
@@ -50,6 +52,7 @@ class ControllerBridge:
     FIXED_FUEL_INJECTION = 0.08
 
     def __init__(self, config: dict | None = None):
+        """Initialize the component and its runtime state."""
         self._lib: Optional[ctypes.CDLL] = None
         self._handle: Optional[ctypes.c_void_p] = None
         self._controller_type: str = "fixed"
@@ -76,6 +79,7 @@ class ControllerBridge:
 
     @property
     def required_signals(self) -> frozenset[str]:
+        """Run the required signals operation."""
         return self._controller_model.required_signals
 
     def _load_library(self) -> None:
@@ -101,11 +105,12 @@ class ControllerBridge:
                     self._lib = ctypes.CDLL(str(lib_path))
                     return
                 except OSError:
-                    # library present but failed to load; fall back to pure-Python
+                    # A present library can still be unusable because of a
+                    # missing runtime dependency; keep the Python fallback.
                     self._lib = None
                     return
 
-        # If the shared library isn't available, don't fail — allow a Python fallback.
+        # If the shared library isn't available, don't fail -- allow a Python fallback.
         self._lib = None
 
     def _create_controller(self) -> None:
@@ -113,6 +118,7 @@ class ControllerBridge:
         # If C++ library wasn't loaded, skip creating the native controller and
         # rely on the Python fallback behavior in `compute()`.
         if not self._lib:
+            # The simulator remains usable before the optional native build.
             self._handle = None
             return
 
@@ -121,7 +127,8 @@ class ControllerBridge:
 
         # Check if the function exists in the library
         if not hasattr(self._lib, create_func_name):
-            # Fall back to Python if the specific controller type isn't available
+            # A library may load successfully but not export the requested
+            # controller factory, so use the same safe fallback.
             self._handle = None
             return
 
@@ -167,6 +174,7 @@ class ControllerBridge:
         self._create_controller()
 
     def _destroy_controller(self) -> None:
+        """Release the component's runtime resources."""
         if self._lib and self._handle and hasattr(self._lib, "destroy_controller"):
             self._lib.destroy_controller.argtypes = [ctypes.c_void_p]
             self._lib.destroy_controller(self._handle)
@@ -208,6 +216,8 @@ class ControllerBridge:
         ]
 
         if measured_items:
+            # Keep the ctypes array alive through the native call; the native
+            # structure stores only a pointer to this temporary buffer.
             measured_array = (MeasuredSignal * len(measured_items))(*measured_items)
             native_measured_values = MeasuredValues(len(measured_items), measured_array)
         else:
@@ -230,4 +240,3 @@ class ControllerBridge:
     def __del__(self):
         """Clean up the C++ controller on deletion."""
         self._destroy_controller()
-

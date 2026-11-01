@@ -10,6 +10,7 @@ import yaml
 
 
 def _load_yaml(path: Path) -> dict[str, Any]:
+    """Load the configured defaults required by the component."""
     if not path.exists():
         return {}
 
@@ -26,8 +27,11 @@ def _load_yaml(path: Path) -> dict[str, Any]:
 
 
 def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
+    """Perform the internal helper operation represented by this function."""
     merged = dict(base)
     for key, value in override.items():
+        # Nested mappings are merged so an experiment can override one field
+        # without duplicating the rest of the base configuration.
         if (
             key in merged
             and isinstance(merged[key], dict)
@@ -41,6 +45,7 @@ def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any
 
 @dataclass(frozen=True)
 class RuntimeConfig:
+    """Represent the RuntimeConfig component used by the simulator."""
     project: str
     active_experiment: str
     simulation: dict[str, Any]
@@ -52,6 +57,7 @@ class RuntimeConfig:
     sensor: dict[str, Any]
 
     def to_dict(self) -> dict[str, Any]:
+        """Run the to dict operation."""
         return {
             "project": self.project,
             "active_experiment": self.active_experiment,
@@ -66,10 +72,13 @@ class RuntimeConfig:
 
 
 def load_runtime_config(config_root: str | Path = "config") -> RuntimeConfig:
+    """Run the load runtime config operation."""
     root = Path(config_root)
 
     global_config = _load_yaml(root / "global.yaml")
 
+    # Global settings select the experiment-specific model files; simulation
+    # timing and logging remain global defaults for every experiment.
     config_folder = global_config.get("config_folder", "base")
 
     engine_config = _load_yaml(root / config_folder / "engine.yaml")
@@ -100,6 +109,7 @@ def load_runtime_config(config_root: str | Path = "config") -> RuntimeConfig:
 
 
 def write_resolved_config(runtime_config: RuntimeConfig, output_path: str | Path) -> Path:
+    """Run the write resolved config operation."""
     path = Path(output_path)
     path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -107,4 +117,3 @@ def write_resolved_config(runtime_config: RuntimeConfig, output_path: str | Path
         yaml.safe_dump(runtime_config.to_dict(), handle, sort_keys=False)
 
     return path
-

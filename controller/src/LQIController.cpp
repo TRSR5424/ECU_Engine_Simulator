@@ -1,3 +1,7 @@
+/** @file LQIController.cpp
+ *  @brief Native controller LQIController implementation.
+ */
+
 #include "LQIController.h"
 #include <algorithm>
 

@@ -30,5 +30,7 @@ class SensorBase(ABC):
 
 @dataclass
 class Sensor(SensorBase):
+    """Represent the Sensor component used by the simulator."""
     def read(self, actual_state: float) -> float:
+        """Return the sensor value for the supplied engine state."""
         return actual_state

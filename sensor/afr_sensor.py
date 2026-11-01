@@ -12,23 +12,27 @@ from sensor.sensor_base import Sensor
 
 @dataclass
 class AFRSensor(Sensor):
+    """Represent the AFRSensor component used by the simulator."""
     sensor_type = "AFR_sensor"
     provided_signal = "air_fuel_ratio"
 
 
 @dataclass
 class AFRIdentitySensor(IdentitySensor):
+    """Represent the AFRIdentitySensor component used by the simulator."""
     sensor_type = "AFR_sensor"
     provided_signal = "air_fuel_ratio"
 
 
 @dataclass
 class AFRNoisySensor(NoisySensor):
+    """Represent the AFRNoisySensor component used by the simulator."""
     sensor_type = "AFR_sensor"
     provided_signal = "air_fuel_ratio"
 
 
 @dataclass
 class AFRDelayedSensor(DelayedSensor):
+    """Represent the AFRDelayedSensor component used by the simulator."""
     sensor_type = "AFR_sensor"
     provided_signal = "air_fuel_ratio"

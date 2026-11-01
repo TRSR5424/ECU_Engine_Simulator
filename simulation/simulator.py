@@ -21,6 +21,7 @@ from engine.engine_base import BaseEngineState
 
 @dataclass(frozen=True)
 class SimulationSettings:
+    """Represent the SimulationSettings component used by the simulator."""
     duration: float = 30.0
     dt: float = 0.1
     throttle: float | dict[Any, Any] = 0.6
@@ -28,6 +29,7 @@ class SimulationSettings:
     load_torque: float | dict[Any, Any] = 0.0
 
     def __post_init__(self) -> None:
+        """Validate and finalize dataclass initialization."""
         calculate_step_count(self.duration, self.dt)
         InputSchedule(self.throttle, "throttle", 0.0, 1.0)
         InputSchedule(self.target_air_fuel_ratio, "target_air_fuel_ratio", 0.0, None, strict_minimum=True)
@@ -35,6 +37,7 @@ class SimulationSettings:
     
 @dataclass()
 class SimulationState:
+    """Represent the SimulationState component used by the simulator."""
     engine_state: BaseEngineState
     initial_engine_state: BaseEngineState = field(repr=False)
     current_time: float = 0.0
@@ -43,14 +46,18 @@ class SimulationState:
     
 @dataclass
 class SimulationResult:
+    """Represent the SimulationResult component used by the simulator."""
     records: list[SimulationRecord] = field(default_factory=list)
 
 
 def _resolve_sensor_values(sensors: list[SensorBase], state: BaseEngineState) -> dict[str, float]:
+    """Resolve the requested runtime values from the current state."""
     sensor_values = {}
     state_dict = state.__dict__
-    
+
     for sensor in sensors:
+        # AFR is derived rather than stored in the state dataclass, so it needs
+        # an explicit lookup before ordinary state fields are considered.
         if sensor.provided_signal == "air_fuel_ratio":
             sensor_values["air_fuel_ratio"] = sensor.read(state.air_fuel_ratio)
             break
@@ -65,6 +72,7 @@ def _resolve_sensor_values(sensors: list[SensorBase], state: BaseEngineState) ->
 
 @dataclass
 class Simulator:
+    """Represent the Simulator component used by the simulator."""
     state: SimulationState = field(init=False)
     settings: SimulationSettings = field(default_factory=SimulationSettings)
     engine: EngineBase = field(default_factory=create_engine)
@@ -73,6 +81,7 @@ class Simulator:
     input_schedule: dict[str, InputSchedule] = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
+        """Validate and finalize dataclass initialization."""
         self.input_schedule = {
             "throttle": InputSchedule(self.settings.throttle, "throttle", 0.0, 1.0),
             "target_air_fuel_ratio": InputSchedule(
@@ -92,9 +101,13 @@ class Simulator:
 
     @property
     def finished(self) -> bool:
+        """Report whether all configured simulation steps are complete."""
         return self.state.step_index >= calculate_step_count(self.settings.duration, self.settings.dt)
 
     def _simulation_step(self, timestep_index: int, timestep_time: float, previous_state: BaseEngineState) -> SimulationRecord:
+        """Perform the internal helper operation represented by this function."""
+        # Sensors read the pre-transition state; the resulting record stores
+        # the post-transition engine state alongside those measurements.
         throttle = self.input_schedule["throttle"].resolve(timestep_index)
         target_air_fuel_ratio = self.input_schedule["target_air_fuel_ratio"].resolve(timestep_index)
         load_torque = self.input_schedule["load_torque"].resolve(timestep_index)
@@ -170,6 +183,7 @@ class Simulator:
         return result, self.finished
     
     def run(self) -> SimulationResult:
+        """Run the configured operation to completion and return its result."""
         result = SimulationResult()
 
         while not self.finished:

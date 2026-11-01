@@ -37,6 +37,7 @@ from analysis.plot_helpers import (
 )
 
 def run_single(exp_folder: str):
+    """Run the run single operation."""
     data = load_data(find_csv_in_folder(exp_folder))
     plot_afr(data, os.path.join(exp_folder, 'afr_plot.png'), label='AFR')
     plot_rpm(data, os.path.join(exp_folder, 'rpm_plot.png'), label='RPM')
@@ -49,6 +50,7 @@ def run_single(exp_folder: str):
 
 
 def run_comparison(file: str):
+    """Run the run comparison operation."""
     afr_comparison_plot(file, 'comparison/afr_comparison_plot.png')
     rpm_comparison_plot(file, 'comparison/rpm_comparison_plot.png')
     torque_comparison_plot(file, 'comparison/torque_comparison_plot.png')
@@ -58,6 +60,7 @@ def run_comparison(file: str):
 
 
 def main():
+    """Parse inputs and run the command-line entry point."""
     p = argparse.ArgumentParser()
     p.add_argument('-experiment', help='Path to experiment folder containing CSV output or CSV with paths to multiple experiment folders')
     args = p.parse_args()

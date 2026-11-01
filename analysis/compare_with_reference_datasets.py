@@ -75,10 +75,12 @@ UNITS = {
 
 
 def _normalise(name: object) -> str:
+    """Perform the internal helper operation represented by this function."""
     return re.sub(r"[^a-z0-9]+", "_", str(name).strip().lower()).strip("_")
 
 
 def _find_csv(path: Path) -> Path:
+    """Find and return the matching input resource."""
     if path.is_file():
         if path.suffix.lower() == ".7z":
             raise ValueError(
@@ -100,6 +102,7 @@ def _find_csv(path: Path) -> Path:
 
 
 def _read_dataset(path: Path, max_rows: int | None) -> pd.DataFrame:
+    """Read and normalize the requested input data."""
     if path.is_dir():
         files = sorted(path.rglob("VED_*.csv"))
         if not files:
@@ -115,6 +118,7 @@ def _read_dataset(path: Path, max_rows: int | None) -> pd.DataFrame:
 
 
 def _column_map(frame: pd.DataFrame) -> dict[str, str]:
+    """Perform the internal helper operation represented by this function."""
     normalised = {_normalise(column): str(column) for column in frame.columns}
     result: dict[str, str] = {}
     for metric, aliases in ALIASES.items():
@@ -126,10 +130,12 @@ def _column_map(frame: pd.DataFrame) -> dict[str, str]:
 
 
 def _numeric(frame: pd.DataFrame, column: str) -> pd.Series:
+    """Perform the internal helper operation represented by this function."""
     return pd.to_numeric(frame[column], errors="coerce").replace([np.inf, -np.inf], np.nan).dropna()
 
 
 def _summary(values: pd.Series) -> dict[str, float | int]:
+    """Perform the internal helper operation represented by this function."""
     if values.empty:
         return {"n": 0}
     quantiles = values.quantile([0.05, 0.25, 0.5, 0.75, 0.95])
@@ -153,6 +159,7 @@ def _metric_row(
     dataset: str,
     reference_column: str,
 ) -> dict[str, Any]:
+    """Perform the internal helper operation represented by this function."""
     sim = _summary(simulator)
     ref = _summary(reference)
     sim_mean = float(sim.get("mean", np.nan))
@@ -182,6 +189,7 @@ def _metric_row(
 
 
 def _interpret(row: dict[str, Any]) -> str:
+    """Perform the internal helper operation represented by this function."""
     simulator = float(row["simulator_mean"])
     reference = float(row["reference_mean"])
     difference = simulator - reference
@@ -205,6 +213,7 @@ def _interpret(row: dict[str, Any]) -> str:
 
 
 def _fault_summary(frame: pd.DataFrame, columns: dict[str, str]) -> list[dict[str, Any]]:
+    """Perform the internal helper operation represented by this function."""
     aliases = ("fault", "fault_type", "label", "class", "target")
     normalised = {_normalise(column): str(column) for column in frame.columns}
     label_column = next((normalised[_normalise(alias)] for alias in aliases if _normalise(alias) in normalised), None)
@@ -225,6 +234,7 @@ def _markdown_report(
     fault_rows: list[dict[str, Any]],
     datasets: dict[str, dict[str, Any]],
 ) -> str:
+    """Perform the internal helper operation represented by this function."""
     lines = [
         "# Reference-data numbers",
         "",
@@ -268,6 +278,7 @@ def _markdown_report(
 
 
 def _json_safe(value: Any) -> Any:
+    """Perform the internal helper operation represented by this function."""
     if isinstance(value, dict):
         return {key: _json_safe(item) for key, item in value.items()}
     if isinstance(value, list):
@@ -284,6 +295,7 @@ def compare(
     output_path: Path,
     max_reference_rows: int | None = None,
 ) -> dict[str, Any]:
+    """Run the compare operation."""
     simulator_frame = _read_dataset(simulator_path, None)
     simulator_columns = _column_map(simulator_frame)
     rows: list[dict[str, Any]] = []
@@ -336,6 +348,7 @@ def compare(
 
 
 def main() -> None:
+    """Parse inputs and run the command-line entry point."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--simulator", required=True, type=Path, help="Simulator CSV or folder containing one CSV")
     parser.add_argument(

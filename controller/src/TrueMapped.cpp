@@ -1,3 +1,7 @@
+/** @file TrueMapped.cpp
+ *  @brief Native controller TrueMapped implementation.
+ */
+
 // High fidelity Map suggested
 
 #include "TrueMapped.h"

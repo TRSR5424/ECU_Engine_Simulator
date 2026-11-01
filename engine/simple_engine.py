@@ -10,7 +10,9 @@ from engine.engine_base import EngineBase, BaseEngineState
 
 @dataclass
 class SimpleEngineState(BaseEngineState):
+	"""Represent the SimpleEngineState component used by the simulator."""
 	def __init__(self, initState: dict[str, Any] | None = None):
+		"""Initialize the component and its runtime state."""
 		initState = initState or {}
 		super().__init__()
 		self.air_mass = 1.0 if initState.get("air_mass") is None else float(initState["air_mass"])
@@ -42,10 +44,12 @@ class SimpleEngine(EngineBase):
 	_initial_state: BaseEngineState = field(init=False, repr=False)
 
 	def __post_init__(self) -> None:
+		"""Validate and finalize dataclass initialization."""
 		self.state = SimpleEngineState(self.init_state)
 		self._initial_state = copy.deepcopy(self.state)
 
 	def reset(self) -> None:
+		"""Restore runtime state to its initial condition."""
 		self.state = copy.deepcopy(self._initial_state)
 
 	def step(
@@ -55,6 +59,7 @@ class SimpleEngine(EngineBase):
 		dt: float,
 		load_torque: float = 0.0,
 	) -> BaseEngineState:
+		"""Advance the model by one simulation timestep."""
 		next_state = copy.deepcopy(self.state)
 		air_inflow = self.air_inflow_coeff * throttle
 		air_outflow = self.air_outflow_coeff * next_state.air_mass
@@ -64,15 +69,17 @@ class SimpleEngine(EngineBase):
 		next_state.fuel_mass = max(0.0, next_state.fuel_mass + dt * (fuel_injection - fuel_burn))
 
 		torque_from_fuel = self.torque_coeff * fuel_injection
+		# Speed-dependent load is added to the externally requested load before
+		# calculating net torque, allowing the model to decelerate under load.
 		load_torque += self.load_coeff * next_state.engine_speed_rpm
 		# allow negative net torque (engine absorbing torque / braking)
 		net_torque = torque_from_fuel - load_torque
 		next_state.torque = net_torque
   
-		# RPM responds to the net torque (positive accelerates, negative decelerates)
+		# RPM responds to net torque: positive torque accelerates and negative
+		# torque decelerates, while the lower bound prevents reverse speed.
 		rpm_delta = self.speed_response_coeff * net_torque
 		next_state.engine_speed_rpm = max(0.0, next_state.engine_speed_rpm + dt * rpm_delta)
 
 		self.state = next_state
 		return next_state
-

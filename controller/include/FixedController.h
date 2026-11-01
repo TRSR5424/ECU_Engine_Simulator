@@ -1,3 +1,7 @@
+/** @file FixedController.h
+ *  @brief Native controller FixedController implementation.
+ */
+
 #ifndef FIXED_CONTROLLER_H
 #define FIXED_CONTROLLER_H
 

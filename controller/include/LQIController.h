@@ -1,3 +1,7 @@
+/** @file LQIController.h
+ *  @brief Native controller LQIController implementation.
+ */
+
 #ifndef LQI_CONTROLLER_h
 #define LQI_CONTROLLER_h
 

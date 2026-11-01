@@ -1,3 +1,7 @@
+/** @file MappedPIDController.h
+ *  @brief Native controller MappedPIDController implementation.
+ */
+
 #ifndef MAPPED_PID_CONTROLLER_H
 #define MAPPED_PID_CONTROLLER_H
 

@@ -23,23 +23,29 @@ class Main:
     """Main entry point for the fixed-parameter MVP simulation."""
 
     def __init__(self) -> None:
+        """Initialize the component and its runtime state."""
         self.running_simulation = False
         self.is_step = False
 
     async def start(self) -> None:
+        """Start the simulation lifecycle."""
         self.running_simulation = True
 
     async def stop(self) -> None:
+        """Stop the simulation lifecycle."""
         self.running_simulation = False
         
     async def toggle(self) -> None:
+        """Toggle the simulation lifecycle state."""
         self.running_simulation = not self.running_simulation
         
     async def step(self) -> None:
+        """Advance the model by one simulation timestep."""
         self.running_simulation = True
         await self.stop()
 
     def main(self) -> None:
+        """Parse inputs and run the command-line entry point."""
         runtime_config = load_runtime_config()
         write_resolved_config(runtime_config, Path("config/active/resolved_config.yaml"))
 

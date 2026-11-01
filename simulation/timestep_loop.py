@@ -9,6 +9,7 @@ from typing import Iterator
 
 @dataclass(frozen=True)
 class Timestep:
+	"""Represent the Timestep component used by the simulator."""
 	time: float
 	index: int
 

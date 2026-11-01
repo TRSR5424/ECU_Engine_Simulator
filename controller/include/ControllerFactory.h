@@ -1,3 +1,7 @@
+/** @file ControllerFactory.h
+ *  @brief Native controller ControllerFactory implementation.
+ */
+
 #ifndef CONTROLLER_FACTORY_H
 #define CONTROLLER_FACTORY_H
 

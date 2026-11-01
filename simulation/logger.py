@@ -16,6 +16,7 @@ from simulation.timestep_loop import calculate_step_count
 
 @dataclass(frozen=True)
 class SimulationRecord:
+	"""Represent the SimulationRecord component used by the simulator."""
 	time: float
 	throttle: float
 	load_torque: float
@@ -33,10 +34,12 @@ class CsvLogger:
 	"""Persist simulation records to a CSV file."""
 
 	def __init__(self, run_config: RuntimeConfig):
+		"""Initialize the component and its runtime state."""
 		self.run_config = run_config
 
 	@staticmethod
 	def _git_revision() -> str | None:
+		"""Run the  git revision operation."""
 		try:
 			result = subprocess.run(
 				["git", "rev-parse", "HEAD"],
@@ -50,6 +53,7 @@ class CsvLogger:
 
 	@staticmethod
 	def _state_values(state) -> dict[str, float]:
+		"""Run the  state values operation."""
 		return {
 			"air_mass": state.air_mass,
 			"fuel_mass": state.fuel_mass,
@@ -59,6 +63,7 @@ class CsvLogger:
 		}
 
 	def _build_info(self, simulator, records: list[SimulationRecord], output_path: Path) -> dict:
+		"""Run the  build info operation."""
 		final_record = records[-1] if records else None
 		sensor_details = []
 		for name, sensor in self.run_config.sensor.items():
@@ -130,6 +135,7 @@ class CsvLogger:
 	]
 
 	def write(self, path: str | Path, records: Iterable[SimulationRecord], simulator=None) -> Path:
+		"""Run the write operation."""
 		records = list(records)
 		output_path = Path(path, f"{self.run_config.active_experiment}/.{self.run_config.active_experiment}_output.csv")
 		output_path.parent.mkdir(parents=True, exist_ok=True)

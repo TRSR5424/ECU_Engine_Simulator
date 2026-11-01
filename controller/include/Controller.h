@@ -1,3 +1,7 @@
+/** @file Controller.h
+ *  @brief Native controller Controller implementation.
+ */
+
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 

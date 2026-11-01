@@ -1,3 +1,7 @@
+/** @file PIDController.cpp
+ *  @brief Native controller PIDController implementation.
+ */
+
 #include "PIDController.h"
 #include <algorithm>
 

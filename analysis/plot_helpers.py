@@ -1,3 +1,5 @@
+"""Shared data loading and plotting helpers for experiment analysis."""
+
 import os
 
 import seaborn as sns
@@ -6,10 +8,12 @@ import pandas as pd
 
 
 def ensure_dir(path: str):
+    """Create a directory and its parents when they do not already exist."""
     os.makedirs(path, exist_ok=True)
 
 
 def find_csv_in_folder(folder: str) -> str:
+    """Return the first CSV file found in an experiment folder."""
     for fname in os.listdir(folder):
         if fname.lower().endswith('.csv'):
             return os.path.join(folder, fname)
@@ -17,10 +21,12 @@ def find_csv_in_folder(folder: str) -> str:
 
 
 def load_data(csv_path: str) -> pd.DataFrame:
+    """Load one simulation-output CSV into a pandas data frame."""
     return pd.read_csv(csv_path)
 
 
 def plot_afr(df: pd.DataFrame, out_path: str, label: str | None = None):
+    """Plot measured air-fuel ratio against simulation time."""
     sns.set_theme(style="darkgrid")
 
     fig = sns.relplot(
@@ -34,6 +40,7 @@ def plot_afr(df: pd.DataFrame, out_path: str, label: str | None = None):
 
 
 def plot_afr_vs_target_afr(df: pd.DataFrame, out_path: str, label: str | None = None):
+    """Plot actual and target AFR on separate y-axes."""
     fig, ax1 = plt.subplots(figsize=(12, 6))
     ax2 = ax1.twinx()
 
@@ -52,6 +59,7 @@ def plot_afr_vs_target_afr(df: pd.DataFrame, out_path: str, label: str | None = 
 
 
 def plot_rpm(df: pd.DataFrame, out_path: str, label: str | None = None):
+    """Plot engine speed against simulation time."""
     sns.set_theme(style="darkgrid")
 
     fig = sns.relplot(
@@ -65,6 +73,7 @@ def plot_rpm(df: pd.DataFrame, out_path: str, label: str | None = None):
 
 
 def plot_throttle(df: pd.DataFrame, out_path: str, label: str | None = None):
+    """Plot throttle position against simulation time."""
     sns.set_theme(style="darkgrid")
 
     fig = sns.relplot(
@@ -78,6 +87,7 @@ def plot_throttle(df: pd.DataFrame, out_path: str, label: str | None = None):
 
 
 def plot_throttle_rpm_afr(df: pd.DataFrame, out_path: str):
+    """Plot throttle, engine speed, and AFR together."""
     fig, ax1 = plt.subplots(figsize=(12, 6))
     ax2 = ax1.twinx()
     ax3 = ax1.twinx()
@@ -103,6 +113,7 @@ def plot_throttle_rpm_afr(df: pd.DataFrame, out_path: str):
 
 
 def plot_torque_vs_rpm(df: pd.DataFrame, out_path: str):
+    """Plot engine speed and torque against simulation time."""
     fig, ax1 = plt.subplots(figsize=(12, 6))
     ax2 = ax1.twinx()
 
@@ -120,6 +131,7 @@ def plot_torque_vs_rpm(df: pd.DataFrame, out_path: str):
 
 
 def plot_fuel_injection_with_air_mass(df: pd.DataFrame, out_path: str):
+    """Plot fuel injection and air mass against simulation time."""
     fig, ax1 = plt.subplots(figsize=(12, 6))
     ax2 = ax1.twinx()
 
@@ -138,6 +150,7 @@ def plot_fuel_injection_with_air_mass(df: pd.DataFrame, out_path: str):
 
 
 def _get_experiments_from_csv(file: str) -> list[str]:
+    """Read experiment paths from a comparison-list text file."""
     experiments = []
     with open("analysis/" + file, 'r') as f:
         for line in f:
@@ -148,6 +161,7 @@ def _get_experiments_from_csv(file: str) -> list[str]:
 
 
 def _create_df_for_comparison(experiments: list[str], compared_on: str, out_path: str) -> pd.DataFrame:
+    """Combine one measured column from several experiment output folders."""
     comparison_data = []
     for exp in experiments:
         loaded_data = load_data(find_csv_in_folder(exp))
@@ -162,6 +176,7 @@ def _create_df_for_comparison(experiments: list[str], compared_on: str, out_path
 
 
 def afr_comparison_plot(file: str, out_path: str):
+    """Save an AFR comparison plot for all experiments in a list file."""
     sns.set_theme(style="darkgrid")
 
     experiments = _get_experiments_from_csv(file)
@@ -185,6 +200,7 @@ def afr_comparison_plot(file: str, out_path: str):
 
 
 def torque_comparison_plot(file: str, out_path: str):
+    """Save a torque comparison plot for all experiments in a list file."""
     sns.set_theme(style="darkgrid")
 
     experiments = _get_experiments_from_csv(file)
@@ -208,6 +224,7 @@ def torque_comparison_plot(file: str, out_path: str):
 
 
 def rpm_comparison_plot(file: str, out_path: str):
+    """Save an engine-speed comparison plot for all experiments in a list file."""
     sns.set_theme(style="darkgrid")
 
     experiments = _get_experiments_from_csv(file)
@@ -231,6 +248,7 @@ def rpm_comparison_plot(file: str, out_path: str):
 
 
 def throttle_comparison_plot(file: str, out_path: str):
+    """Save a throttle comparison plot for all experiments in a list file."""
     sns.set_theme(style="darkgrid")
 
     experiments = _get_experiments_from_csv(file)
@@ -254,6 +272,7 @@ def throttle_comparison_plot(file: str, out_path: str):
 
 
 def fuel_injection_comparison_plot(file: str, out_path: str):
+    """Save a fuel-injection comparison plot for all experiments in a list file."""
     sns.set_theme(style="darkgrid")
 
     experiments = _get_experiments_from_csv(file)
@@ -277,6 +296,7 @@ def fuel_injection_comparison_plot(file: str, out_path: str):
 
 
 def air_mass_comparison_plot(file: str, out_path: str):
+    """Save an air-mass comparison plot for all experiments in a list file."""
     sns.set_theme(style="darkgrid")
 
     experiments = _get_experiments_from_csv(file)

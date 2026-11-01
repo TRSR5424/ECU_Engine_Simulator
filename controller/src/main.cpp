@@ -1,3 +1,7 @@
+/** @file main.cpp
+ *  @brief Native controller main implementation.
+ */
+
 #include "ControllerFactory.h"
 #include "Controller.h"
 

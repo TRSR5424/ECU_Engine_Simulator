@@ -11,6 +11,9 @@ class ConfigurationValidationError(ValueError):
 
 
 def _as_sequence(sensors) -> list[object]:
+	"""Normalize the input into the expected representation."""
+	# Configuration accepts one sensor or a collection so callers do not need
+	# special-case logic for single-sensor experiments.
 	if sensors is None:
 		return []
 
@@ -23,11 +26,13 @@ def _as_sequence(sensors) -> list[object]:
 	return [sensors]
 
 def _has_map(engine) -> bool:
+	"""Report whether the requested capability is available."""
 	return bool(getattr(engine, "fuel_map", None))
 
 
 
 def _format_block(title: str, name: str, missing: set[str], available: set[str] | None = None) -> str:
+	"""Format the requested values for user-facing output."""
 	lines = ["Configuration Error", title, name, "Missing"]
 	for item in sorted(missing):
 		lines.append(f"- {item}")
@@ -45,7 +50,7 @@ def validate(engine, sensors, ecu) -> None:
 
 	installed_sensors = _as_sequence(sensors)
 	installed_sensor_types = {
-		sensors.sensorType() for sensor in installed_sensors #It is correct figure out how to remove error
+		sensor.sensorType() for sensor in installed_sensors
 	}
 
 	required_sensors = {
@@ -65,7 +70,9 @@ def validate(engine, sensors, ecu) -> None:
 
 	available_signals: set[str] = set()
 	for sensor in installed_sensors:
-		sensor = cast(Any, sensor) #THIS IS NOT CORRECT BE BETTER
+		# Sensor implementations expose this legacy method dynamically; retain
+		# the cast at this compatibility boundary rather than changing the API.
+		sensor = cast(Any, sensor)
 		provided_signal = sensor.providedSignal()
 		available_signals.update(str(provided_signal).lower() for provided_signal in _as_sequence(provided_signal))
 

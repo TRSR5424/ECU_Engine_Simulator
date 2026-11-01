@@ -1,3 +1,7 @@
+/** @file MappedPIDController.cpp
+ *  @brief Native controller MappedPIDController implementation.
+ */
+
 #include "MappedPIDController.h"
 #include <algorithm>
 

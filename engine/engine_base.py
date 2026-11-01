@@ -18,6 +18,7 @@ class BaseEngineState:
 
     @property
     def air_fuel_ratio(self) -> float:
+        """Run the air fuel ratio operation."""
         if self.fuel_mass <= 0.0:
             return float("inf")
         return self.air_mass / self.fuel_mass
@@ -30,6 +31,7 @@ class EngineBase(ABC):
     required_sensors: ClassVar[frozenset[str]] = frozenset()
     
     def __init__(self) -> None:
+        """Initialize the component and its runtime state."""
         self.state = BaseEngineState()
 
     @abstractmethod

@@ -19,6 +19,9 @@ class InputSchedule:
     strict_minimum: bool = False
 
     def __post_init__(self) -> None:
+        """Validate and finalize dataclass initialization."""
+        # A scalar is represented by step -1, the schedule's always-active
+        # fallback value. Timed schedules may also use -1 as their fallback.
         values = {"-1": self.value} if not isinstance(self.value, dict) else self.value
         normalized_keys: list[int] = []
         for raw_step, raw_value in values.items():
@@ -47,6 +50,8 @@ class InputSchedule:
                     f"{self.name} schedule values must be at most {self.maximum}"
                 )
 
+        # Requiring step 0 prevents a schedule from being undefined at the
+        # beginning of a run when it contains timed entries.
         if any(step != -1 for step in normalized_keys) and 0 not in normalized_keys:
             raise ValueError(
                 f"{self.name} schedules with timed keys must include step 0"
@@ -58,6 +63,8 @@ class InputSchedule:
             return float(self.value)
 
         resolved_value: float | None = None
+        # Entries are applied in ascending order, so the last entry not after
+        # the requested step is the active value.
         for raw_step, raw_value in sorted(self.value.items(), key=lambda item: int(item[0])):
             if int(raw_step) <= step_index:
                 resolved_value = float(raw_value)

@@ -1,3 +1,7 @@
+/** @file Controller.cpp
+ *  @brief Native controller Controller implementation.
+ */
+
 #include "Controller.h"
 #include <algorithm>
 #include <cstddef>

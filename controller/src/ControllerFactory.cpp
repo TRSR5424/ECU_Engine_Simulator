@@ -1,3 +1,7 @@
+/** @file ControllerFactory.cpp
+ *  @brief Native controller ControllerFactory implementation.
+ */
+
 #include "ControllerFactory.h"
 #include "FixedController.h"
 #include "PIDController.h"

@@ -23,6 +23,7 @@ from analysis.plot_helpers import plot_afr_vs_rpm
 
 
 def compare(a_folder: str, b_folder: str):
+	"""Run the compare operation."""
 	csv_a = find_csv_in_folder(a_folder)
 	csv_b = find_csv_in_folder(b_folder)
 	df_a = load_data(csv_a)
@@ -54,6 +55,7 @@ def compare(a_folder: str, b_folder: str):
 
 
 def main():
+	"""Parse inputs and run the command-line entry point."""
 	p = argparse.ArgumentParser()
 	p.add_argument('-a')
 	p.add_argument('-b')

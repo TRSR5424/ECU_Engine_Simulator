@@ -17,6 +17,7 @@ _ENGINE_TYPES: dict[str, type[EngineBase]] = {
 
 
 def _load_engine_defaults() -> dict[str, Any]:
+	"""Load the configured defaults required by the component."""
 	config_path = Path("config/base/engine.yaml")
 	if not config_path.exists():
 		return {}

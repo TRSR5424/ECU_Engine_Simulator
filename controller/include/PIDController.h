@@ -1,3 +1,7 @@
+/** @file PIDController.h
+ *  @brief Native controller PIDController implementation.
+ */
+
 #ifndef PID_CONTROLLER_H
 #define PID_CONTROLLER_H
 

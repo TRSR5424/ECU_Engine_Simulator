@@ -173,10 +173,6 @@ publication details.
 - Reference datasets: comparison and evaluation where appropriate.
 - PDF/Word software: preparation of the TOR and final report.
 
-**Note:** Mention that all software will be appropriately licensed and that the simulator
-can be demonstrated using a university computer if the personal machine is
-unavailable.
-
 7. Deliverables (maximum 50 words)
 -----------------------------------
 

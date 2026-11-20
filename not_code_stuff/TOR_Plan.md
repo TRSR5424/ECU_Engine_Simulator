@@ -150,6 +150,9 @@ publication details.
   — Find the journal link.
 - [Automotive Control Systems: For Engine, Driveline, and Vehicle](https://ftp.idu.ac.id/wp-content/uploads/ebook/tdg/ADVANCED%20ENGINE%20TECHNOLOGY%20AND%20PERFORMANCE/epdf.pub_automotive-control-systems-for-engine-driveline-an.pdf)
   — Find and use the official publisher link.
+- [Vehicle Energy Dataset (VED) research paper](https://arxiv.org/abs/1905.02081)
+- [EngineFaultDB publication](https://doi.org/10.1109/ACCESS.2023.3331316)
+
 
 ### Look further into
 
@@ -157,8 +160,6 @@ publication details.
 - [Katsuhiko Ogata, Modern Control Engineering, 5th edition](https://www.pearson.com/en-us/subject-catalog/p/modern-control-engineering/P200000003521/9780133002256)
 - [Robert G. Sargent, Verification and Validation of Simulation Models](https://link.springer.com/article/10.1057/jos.2012.20)
 - [Glenford J. Myers, Corey Sandler and Tom Badgett, The Art of Software Testing, 3rd edition](https://www.wiley.com/en-us/The+Art+of+Software+Testing%2C+3rd+Edition-p-x000565567)
-- [Vehicle Energy Dataset (VED) research paper](https://arxiv.org/abs/1905.02081)
-- [EngineFaultDB publication](https://doi.org/10.1109/ACCESS.2023.3331316)
 
 
 6. Resources Required (maximum 100 words)

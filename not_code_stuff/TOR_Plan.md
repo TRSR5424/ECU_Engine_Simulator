@@ -1,4 +1,4 @@
-TOR Planing
+TOR Planning
 =========================
 
 Project: ECU Engine Simulator
@@ -78,6 +78,8 @@ supporting this single aim rather than creating several separate aims.
 10. Evaluate the simulator against reference datasets or expected behaviours
     and identify its limitations.
 
+###
+
 4. Proposed Methodology / Work (maximum 300 words)
 ---------------------------------------------------
 
@@ -90,11 +92,12 @@ supporting this single aim rather than creating several separate aims.
 - A system design separating the engine model, sensor layer, controller layer,
   simulation loop, logger and analysis tools.
 - Python for simulation orchestration, configuration and analysis.
-- C++ for native controller implementations where appropriate.
+- C++ for native controller implementations.
+- C++ is used to match industry
 - ctypes for communication between Python and C++.
 - YAML for experiment configuration.
 - Controlled experiments using different controllers, throttle schedules,
-  engine loads, target AFR values, noise levels and sensor delays.
+  engine loads, target air-fuel ratio (AFR) values, noise levels and sensor delays.
 - Evaluation based on tracking error, settling behaviour, overshoot, stability,
   robustness and execution reliability.
 - Unit tests, integration tests and invariant checks.
@@ -133,7 +136,7 @@ publication details.
 
 - [Åström and Hägglund, Advanced PID Control](https://www.isa.org/getmedia/fb0e41bc-e4f3-422a-9f67-b9bd31340e16/Advanced-PID-Control_AstromHagglund_Chapter1-Introduction.pdf)
 
-### Sources currently being considered
+### Sources being considered
 
 - [Model-Based Control of Diesel Engines for Fuel Efficiency Optimization](https://www.researchgate.net/publication/300910047_Model-Based_Control_of_Diesel_Engines_for_Fuel_Efficiency_Optimization)
   — Find a better link.
